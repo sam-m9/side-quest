@@ -1,0 +1,11 @@
+# Always fetch the freshest app shell so updates land immediately after a deploy.
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache
+
+# Icons rarely change — let them cache.
+/icons/*
+  Cache-Control: public, max-age=86400

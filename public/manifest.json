@@ -1,0 +1,25 @@
+{
+  "name": "Side Quest",
+  "short_name": "Side Quest",
+  "description": "Side Quest",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ECE6D4",
+  "theme_color": "#ECE6D4",
+  "icons": [
+    {
+      "src": "/icons/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
