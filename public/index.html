@@ -323,6 +323,35 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 
 /* TOAST */
 .toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;z-index:1000;white-space:nowrap;pointer-events:none;transition:opacity .3s}
+/* ---- Discover tab ---- */
+.disc-wrap{display:flex;flex-direction:column;min-height:0}
+.disc-datestrip{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--paper);border-bottom:1px solid var(--hair);-webkit-overflow-scrolling:touch}
+.disc-day{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:46px;padding:6px 8px;border:1px solid var(--hair);border-radius:12px;background:var(--panel);color:var(--ink-soft);font-family:var(--mono);cursor:pointer;position:relative}
+.disc-day.on{background:var(--pine);color:#fff;border-color:var(--pine)}
+.disc-day .dd-dow{font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.disc-day .dd-num{font-size:16px;font-weight:600}
+.disc-day .dd-dot{position:absolute;top:-4px;right:-4px;background:var(--maroon);color:#fff;font-size:10px;min-width:16px;height:16px;line-height:16px;border-radius:8px;padding:0 4px}
+.disc-pills{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--paper)}
+.disc-pill{flex:0 0 auto;padding:6px 12px;border:1px solid var(--hair);border-radius:999px;background:var(--panel);color:var(--ink-soft);font-family:var(--mono);font-size:12px;cursor:pointer;white-space:nowrap}
+.disc-pill.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.disc-list{padding:12px;display:flex;flex-direction:column;gap:12px}
+.disc-card{border:1px solid var(--hair);border-radius:16px;overflow:hidden;background:var(--panel);transition:opacity .2s ease,transform .2s ease}
+.disc-card.disc-out{opacity:0;transform:scale(.96)}
+.disc-thumb{width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--paper-alt)}
+.disc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.disc-body{padding:12px}
+.disc-cat{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.disc-title{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);line-height:1.2}
+.disc-meta{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px}
+.disc-price{font-family:var(--mono);font-size:12px;color:var(--pine);margin-top:2px}
+.disc-desc{font-size:14px;color:var(--ink-soft);margin-top:8px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.disc-src{font-family:var(--mono);font-size:10px;color:var(--taupe);margin-top:8px}
+.disc-actions{display:flex;gap:8px;margin-top:12px}
+.disc-btn{flex:1;padding:10px;border-radius:10px;font-family:var(--mono);font-size:13px;cursor:pointer;border:1px solid var(--hair)}
+.disc-btn.ghost{background:transparent;color:var(--ink-soft)}
+.disc-btn.primary{background:var(--pine);color:#fff;border-color:var(--pine)}
+.nb{position:relative}
+.nb-badge{position:absolute;top:0;right:calc(50% - 22px);background:var(--maroon);color:#fff;font-size:9px;min-width:15px;height:15px;line-height:15px;border-radius:8px;font-family:var(--mono);padding:0 3px;text-align:center}
 </style>
 </head>
 <body>
@@ -349,6 +378,7 @@ let imgData=null,loading=false,parsed=null,parsedList=null,addErr='';
 let lightboxSrc=null;
 let toastTm=null,rafId=null;
 let gridOpen=false,jumpDate=null,detDate=null;
+let discovered=[],dismissed=[],discDate='',discCat='all';
 
 // UTILS
 const p2=n=>String(n).padStart(2,'0');
@@ -545,18 +575,92 @@ function bFilter(){
 }
 
 // ---- BOTTOM TAB BAR ----
+// ---- Discover: schema sanitize, storage, feed ----
+const CAT_ALIAS={community:'social',nightlife:'social',arts:'art',theatre:'art',theater:'art',culture:'art'};
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;}
+function normDate(s){if(!s)return'';s=String(s).trim();if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);const d=new Date(s);if(isNaN(d))return'';return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;}
+function splitRange(r){if(!r)return['',''];const parts=String(r).split(/\s*(?:-|–|—|to)\s*/i);return[(parts[0]||'').trim(),(parts[1]||'').trim()];}
+// Coerce any raw event (foreign or internal schema) into Side Quest's exact schema.
+function sanitizeEvent(r){
+  r=r||{};
+  let cat=String(r.category||'').toLowerCase().trim();
+  cat=CAT_ALIAS[cat]||cat;
+  if(!CATK.includes(cat))cat='other';
+  let st=String(r.status||'want').toLowerCase().trim();
+  if(!['want','going','skip'].includes(st))st='want';
+  const date=normDate(r.date||r.startDate||'');
+  const[tr0,tr1]=splitRange(r.timeRange);
+  const id=(r.id!=null&&r.id!=='')?String(r.id):('disc-'+date+'-'+String(r.title||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40));
+  return{
+    id,
+    title:r.title||'Untitled Event',
+    date,
+    time:r.time||tr0||'',
+    endTime:r.endTime||tr1||'',
+    location:r.location||'',
+    price:r.price||'Free / Unspecified',
+    description:r.description||'',
+    category:cat,
+    link:r.link||'',
+    notes:r.notes||'',
+    status:st,
+    isRecurring:!!r.isRecurring,
+    recurringType:r.recurringType||null,
+    thumbnail:r.thumbnail||r.image||'',
+    addedAt:r.addedAt||Date.now()
+  };
+}
+const DISM_KEY='aroundtown-dismissed';
+function loadDismissed(){try{const s=localStorage.getItem(DISM_KEY);const a=s?JSON.parse(s):[];dismissed=Array.isArray(a)?a.map(x=>typeof x==='string'?{id:x,date:''}:x).filter(x=>x&&x.id):[];}catch{dismissed=[];}}
+function saveDismissed(){try{localStorage.setItem(DISM_KEY,JSON.stringify(dismissed));}catch{}}
+function isDismissed(id){return dismissed.some(x=>x.id===id);}
+// Prune dismissed ids whose event date is already in the past (keeps store small).
+function pruneDismissed(){const t=todayISO();const before=dismissed.length;dismissed=dismissed.filter(x=>!x.date||x.date>=t);if(dismissed.length!==before)saveDismissed();}
+async function syncDiscovered(){
+  try{
+    const res=await fetch('./discovered.json?v='+Date.now(),{cache:'no-store'});
+    if(!res.ok)return;
+    const raw=await res.json();
+    if(!Array.isArray(raw))return;
+    discovered=raw.map(sanitizeEvent).filter(e=>e.date&&e.title);
+    render();
+  }catch(e){console.warn('discovered fetch failed',e);}
+}
+function discFeed(){const evIds=new Set(events.map(e=>e.id));return discovered.filter(e=>!isDismissed(e.id)&&!evIds.has(e.id));}
+function discForDate(d){return discFeed().filter(e=>e.date===d&&(discCat==='all'||e.category===discCat));}
+function discTodayCount(){const t=todayISO(),evIds=new Set(events.map(e=>e.id));return discovered.filter(e=>e.date===t&&!isDismissed(e.id)&&!evIds.has(e.id)).length;}
+function bDiscover(){
+  if(!discDate)discDate=todayISO();
+  const base=new Date();base.setHours(0,0,0,0);
+  const days=[];
+  for(let i=0;i<15;i++){const d=new Date(base);d.setDate(base.getDate()+i);const iso=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;days.push({iso,dow:d.toLocaleDateString('en-US',{weekday:'short'}),day:d.getDate(),label:i===0?'Today':(i===1?'Tmrw':'')});}
+  const feedAll=discFeed();
+  const strip=days.map(d=>{const n=feedAll.filter(e=>e.date===d.iso).length;return `<button class="disc-day${discDate===d.iso?' on':''}" data-a="dcd" data-d="${d.iso}"><span class="dd-dow">${d.label||d.dow}</span><span class="dd-num">${d.day}</span>${n?`<span class="dd-dot">${n}</span>`:''}</button>`;}).join('');
+  const pills=['all',...CATK].map(c=>{const lab=c==='all'?'All':(CAT[c]?.l||c);const ic=c==='all'?'✦':(CAT[c]?.i||'');return `<button class="disc-pill${discCat===c?' on':''}" data-a="dcc" data-c="${c}">${ic} ${lab}</button>`;}).join('');
+  const items=discForDate(discDate);
+  const cards=items.map(e=>{
+    const thumb=e.thumbnail?`<div class="disc-thumb"><img src="${e.thumbnail}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`:'';
+    const meta=[e.time,e.location].filter(Boolean).join(' · ');
+    const cc=CAT[e.category]||CAT.other;
+    return `<div class="disc-card" data-id="${e.id}">${thumb}<div class="disc-body"><div class="disc-cat" style="color:${cc.c}">${cc.i} ${cc.l}</div><div class="disc-title">${esc(e.title)}</div>${meta?`<div class="disc-meta">${esc(meta)}</div>`:''}${e.price?`<div class="disc-price">${esc(e.price)}</div>`:''}${e.description?`<div class="disc-desc">${esc(e.description)}</div>`:''}${e.notes?`<div class="disc-src">${esc(e.notes)}</div>`:''}<div class="disc-actions"><button class="disc-btn ghost" data-a="dno" data-id="${e.id}">Not Interested</button><button class="disc-btn primary" data-a="dae" data-id="${e.id}">+ Add to Events</button></div></div></div>`;
+  }).join('');
+  const empty=`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing new for ${fmtD(discDate)}</div><div class="empty-s">Try another day or category — fresh finds land daily.</div></div>`;
+  return `<div class="disc-wrap"><div class="disc-datestrip">${strip}</div><div class="disc-pills">${pills}</div><div class="disc-list">${cards||empty}</div></div>`;
+}
+
 function bNav(){
   const ic={
     cal:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
     list:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
     plans:'<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
-    past:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'
+    past:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+    discover:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="16 8 10 10 8 16 14 14 16 8"/></svg>'
   };
-  const tabs=[['cal','Cal'],['list','List'],['plans','Plans'],['past','Past']];
-  return`<nav class="bnav">${tabs.map(([v,l])=>`<button class="nb${view===v?' on':''}" data-a="sv" data-v="${v}">${ic[v]}<span>${l}</span><span class="nb-ul"></span></button>`).join('')}</nav>`;
+  const tabs=[['cal','Cal'],['discover','Discover'],['list','List'],['plans','Plans'],['past','Past']];
+  return`<nav class="bnav">${tabs.map(([v,l])=>{const bdg=(v==='discover'&&discTodayCount()>0)?`<span class="nb-badge">${discTodayCount()}</span>`:'';return `<button class="nb${view===v?' on':''}" data-a="sv" data-v="${v}">${ic[v]}${bdg}<span>${l}</span><span class="nb-ul"></span></button>`;}).join('')}</nav>`;
 }
 
-function bMain(){try{if(view==='cal')return bCal();if(view==='list')return bList(false);if(view==='past')return bList(true);if(view==='plans')return bPlans();return bSettings();}catch(err){console.error(err);return`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Display Error</div><div class="empty-s"><button class="link-inline" onclick="location.reload()">Tap to reload</button></div></div>`;}}
+function bMain(){try{if(view==='cal')return bCal();if(view==='discover')return bDiscover();if(view==='list')return bList(false);if(view==='past')return bList(true);if(view==='plans')return bPlans();return bSettings();}catch(err){console.error(err);return`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Display Error</div><div class="empty-s"><button class="link-inline" onclick="location.reload()">Tap to reload</button></div></div>`;}}
 
 // ---- MONTH GRID (inline) ----
 function bMonthGrid(y,m){
@@ -908,6 +1012,10 @@ function syncDrafts(){
 }
 const A={
   sv:b=>{view=b.dataset.v;selDay=null;search='';detDate=null;jumpDate=null;akEdit=false;render();},
+  dcd:b=>{discDate=b.dataset.d;render();},
+  dcc:b=>{discCat=b.dataset.c;render();},
+  dno:b=>{const id=b.dataset.id,card=b.closest('.disc-card'),ev=discovered.find(e=>e.id===id);const commit=()=>{if(!isDismissed(id)){dismissed.push({id,date:ev?ev.date:''});saveDismissed();}render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
+  dae:b=>{const id=b.dataset.id,raw=discovered.find(e=>e.id===id);if(!raw)return;const card=b.closest('.disc-card');const commit=()=>{const ev=sanitizeEvent({...raw,status:'want'});if(!events.some(x=>x.id===ev.id)){events.push(ev);saveData();}if(!isDismissed(id)){dismissed.push({id,date:raw.date});saveDismissed();}showToast('✓ Added to your events');render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   sf:b=>{filter=b.dataset.f;render();},
   tg:()=>{gridOpen=!gridOpen;if(gridOpen)jumpDate=null;render();},
   sd:b=>{const d=+b.dataset.d;const ds=tods(navY,navM,d);selDay=d;gridOpen=false;jumpDate=ds;render();},
@@ -1027,9 +1135,9 @@ document.getElementById('imp-fi').addEventListener('change',ev=>{
     const p=new URLSearchParams(window.location.search);
     const sharedText=[p.get('title')||'',p.get('text')||'',p.get('url')||''].filter(Boolean).join('\n').trim();
     if(sharedText){
-      loadData();
+      loadData();loadDismissed();pruneDismissed();discDate=todayISO();
       addOpen=true;addMode='paste';
-      render();
+      render();syncDiscovered();
       // Pre-fill paste area
       requestAnimationFrame(()=>{
         const ta=document.getElementById('paste-inp');
@@ -1038,7 +1146,7 @@ document.getElementById('imp-fi').addEventListener('change',ev=>{
       return;
     }
   }catch{}
-  loadData();render();
+  loadData();loadDismissed();pruneDismissed();discDate=todayISO();render();syncDiscovered();
 })();
 </script>
 </body>

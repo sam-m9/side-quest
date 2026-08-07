@@ -1,0 +1,45 @@
+name: Scrape Austin events
+
+on:
+  schedule:
+    # 05:00 UTC every day (~midnight Austin, CT)
+    - cron: "0 5 * * *"
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scrape-austin
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python scripts/scrape_austin.py
+
+      - name: Commit discovered.json if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- public/discovered.json; then
+            echo "No changes to public/discovered.json"
+            exit 0
+          fi
+          git add public/discovered.json
+          git commit -m "chore: refresh discovered events [skip ci]"
+          git push origin HEAD:main
