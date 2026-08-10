@@ -70,17 +70,43 @@ DO512_URLS = [
 
 THINGS_365_RSS = "https://365thingsaustin.com/feed/"
 
-# RSS-Bridge is a third-party community-hosted service that turns public pages
-# into RSS. The base instance is configurable via env var because public
-# instances rotate and rate-limit. Instagram bridges especially are fragile
-# (IG actively blocks scrapers) — treat these as best-effort.
-RSS_BRIDGE_BASE = os.environ.get("RSS_BRIDGE_BASE", "https://rss-bridge.org/bridge01/")
+# RSS-Bridge turns public pages into RSS. Public instances rate-limit Instagram
+# hard (HTTP 429), so for reliable Instagram you must point this at your OWN
+# instance signed into an IG account. Comma-separate multiple bases to try in
+# order (e.g. "https://my-bridge.example/,https://rss-bridge.org/bridge01/").
+RSS_BRIDGE_BASES = [
+    b.strip()
+    for b in (
+        os.environ.get("RSS_BRIDGE_BASE") or "https://rss-bridge.org/bridge01/"
+    ).split(",")
+    if b.strip()
+]
+# Which RSS-Bridge bridges to try per account, in order. PicukiBridge reads a
+# public IG mirror and often survives when InstagramBridge is rate-limited.
+IG_BRIDGES = ["InstagramBridge", "PicukiBridge"]
 IG_ACCOUNTS = [
     "whenwherewhataustin",
     "365thingsaustin",
     "theaustintourist",
     "emilylovesatx",
 ]
+
+# Optional residential/scraping proxy (e.g. ScraperAPI). When SCRAPERAPI_KEY is
+# set, every http_get() is routed through it so IP-blocked sites like Do512
+# (which 403s datacenter IPs) become reachable. Without it, fetches go direct.
+SCRAPERAPI_KEY = os.environ.get("SCRAPERAPI_KEY", "").strip()
+
+
+def via_proxy(url: str) -> str:
+    if not SCRAPERAPI_KEY:
+        return url
+    from urllib.parse import quote
+    return (
+        "https://api.scraperapi.com/?api_key="
+        + SCRAPERAPI_KEY
+        + "&country_code=us&url="
+        + quote(url, safe="")
+    )
 
 # The app's valid category keys are exactly:
 #   music, food, art, sports, social, film, comedy, outdoors, other
@@ -140,7 +166,7 @@ BROWSER_HEADERS = {
 def http_get(url: str) -> requests.Response | None:
     try:
         resp = requests.get(
-            url, headers=BROWSER_HEADERS, timeout=REQUEST_TIMEOUT
+            via_proxy(url), headers=BROWSER_HEADERS, timeout=REQUEST_TIMEOUT
         )
         resp.raise_for_status()
         return resp
@@ -363,18 +389,45 @@ def _image_from_entry(entry: Any) -> str:
     return ""
 
 
+_MONTH_RE = re.compile(
+    r"\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+    r"jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|"
+    r"dec(?:ember)?)\.?\s+(\d{1,2})\b",
+    re.IGNORECASE,
+)
+
+
 def _entry_date(entry: Any) -> date | None:
-    """Find an event date in the text; fall back to the published date."""
+    """Extract an explicit 'Month Day' from a post; None if there isn't one.
+
+    Blog/IG posts rarely carry a machine date, and the RSS published date is
+    just when the post went up (usually the past), which would create fake
+    past-dated events. So we only trust an explicit month+day in the text, and
+    roll it to next year if that day has already passed this year.
+    """
     text = " ".join(filter(None, [
         getattr(entry, "title", ""),
         clean_text(getattr(entry, "summary", ""), limit=400),
     ]))
-    found = parse_date(text)
-    if found:
-        return found
-    if getattr(entry, "published_parsed", None):
-        return date(*entry.published_parsed[:3])
-    return None
+    m = _MONTH_RE.search(text)
+    if not m:
+        return None
+    try:
+        parsed = dateparser.parse(
+            f"{m.group(1)} {m.group(2)}",
+            default=datetime(today().year, 1, 1),
+        )
+    except (ValueError, OverflowError, TypeError):
+        return None
+    if parsed is None:
+        return None
+    d = parsed.date()
+    if d < today():
+        try:
+            d = d.replace(year=d.year + 1)
+        except ValueError:
+            return None
+    return d
 
 
 def _scrape_feed(feed_url: str, source_name: str, id_prefix: str) -> list[dict]:
@@ -420,16 +473,31 @@ def scrape_365_things() -> list[dict]:
 
 
 def scrape_instagram_bridges() -> list[dict]:
+    """Best-effort Instagram via RSS-Bridge.
+
+    For each account, try every configured bridge base × bridge type until one
+    returns entries. Public instances usually 429; a private RSS_BRIDGE_BASE
+    signed into Instagram is what makes this reliable.
+    """
     events: list[dict] = []
-    base = RSS_BRIDGE_BASE.rstrip("/") + "/"
     for account in IG_ACCOUNTS:
-        feed_url = (
-            f"{base}?action=display&bridge=InstagramBridge"
-            f"&context=Username&u={account}&format=Atom"
-        )
-        events.extend(
-            _scrape_feed(feed_url, f"Instagram @{account}", f"ig-{slugify(account)}")
-        )
+        got = False
+        for raw_base in RSS_BRIDGE_BASES:
+            base = raw_base.rstrip("/") + "/"
+            for bridge in IG_BRIDGES:
+                feed_url = (
+                    f"{base}?action=display&bridge={bridge}"
+                    f"&context=Username&u={account}&format=Atom"
+                )
+                found = _scrape_feed(
+                    feed_url, f"Instagram @{account}", f"ig-{slugify(account)}"
+                )
+                if found:
+                    events.extend(found)
+                    got = True
+                    break
+            if got:
+                break
     return events
 
 

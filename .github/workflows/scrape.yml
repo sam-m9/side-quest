@@ -60,6 +60,14 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run scraper
+        env:
+          # Optional. Set these in the repo's Settings → Secrets and variables → Actions.
+          # RSS_BRIDGE_BASE (Variable): your private RSS-Bridge URL(s) for reliable
+          #   Instagram, comma-separated. Falls back to a public instance if unset.
+          # SCRAPERAPI_KEY (Secret): routes fetches through a residential proxy so
+          #   IP-blocked sites (Do512) work. Fetches go direct if unset.
+          RSS_BRIDGE_BASE: ${{ vars.RSS_BRIDGE_BASE }}
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
         run: python scripts/scrape_austin.py
 
       - name: Commit discovered.json if changed
