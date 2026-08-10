@@ -127,10 +127,20 @@ def now_ms() -> int:
     return int(time.time() * 1000)
 
 
+BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
 def http_get(url: str) -> requests.Response | None:
     try:
         resp = requests.get(
-            url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT
+            url, headers=BROWSER_HEADERS, timeout=REQUEST_TIMEOUT
         )
         resp.raise_for_status()
         return resp
@@ -456,6 +466,16 @@ def main() -> int:
             log.exception("Source %s failed: %s", name, exc)
 
     events = sorted(collected.values(), key=lambda e: (e["date"], e["title"]))
+
+    # Safety: never overwrite a good feed with an empty one. If every source
+    # failed or returned nothing (e.g. a site blocked the runner), keep the
+    # last known-good discovered.json instead of publishing an empty feed.
+    if not events:
+        log.warning(
+            "No events collected from any source — leaving existing %s untouched",
+            OUTPUT_PATH,
+        )
+        return 0
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(

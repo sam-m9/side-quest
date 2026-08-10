@@ -380,7 +380,7 @@ let lightboxSrc=null;
 let toastTm=null,rafId=null;
 let gridOpen=false,jumpDate=null,detDate=null;
 let discovered=[],dismissed=[],discDate='',discCat='all';
-let gClientId='',gToken='',gTokenClient=null,gDriveFileId=null,gSync='off',gSyncTimer=null;
+let gClientId='',gToken='',gTokenClient=null,gDriveFileId=null,gSync='off',gSyncTimer=null,gBackupFolderId=null;
 
 // UTILS
 const p2=n=>String(n).padStart(2,'0');
@@ -738,6 +738,7 @@ async function gAfterAuth(){
     saveData();saveDismissed();   // persist merged locally + schedule a push
     gScheduleSync(true);          // ensure an immediate reconcile push
     render();
+    gWeeklyBackup();              // once-per-week snapshot into the backup folder
   }catch(e){console.warn('Drive sync failed',e);gSync='error';render();}
 }
 function gScheduleSync(immediate){
@@ -761,6 +762,65 @@ function gBootReconnect(){
       else if(tries>20){ clearInterval(t); }   // ~6s, then give up silently
     },300);
   }catch(e){}
+}
+
+// ---- Weekly Drive backup into a "Side Quest BackUp" folder ----
+// Runs client-side: once per week, the first time the app connects to Drive
+// on/after Monday. Writes a permanent dated snapshot + a rolling "latest".
+function gWeekMonday(){
+  const d=new Date(); const day=(d.getDay()+6)%7;   // 0=Mon … 6=Sun
+  d.setDate(d.getDate()-day);
+  return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+}
+async function gEnsureFolder(){
+  if(gBackupFolderId){
+    try{ const r=await gApi('https://www.googleapis.com/drive/v3/files/'+gBackupFolderId+'?fields=id,trashed'); const j=await r.json(); if(j&&j.id&&!j.trashed)return gBackupFolderId; }catch{ gBackupFolderId=null; }
+  }
+  try{const c=localStorage.getItem('sidequest-backup-folder'); if(c){gBackupFolderId=c; const r=await gApi('https://www.googleapis.com/drive/v3/files/'+c+'?fields=id,trashed'); const j=await r.json(); if(j&&j.id&&!j.trashed)return gBackupFolderId; gBackupFolderId=null;}}catch{gBackupFolderId=null;}
+  const q=encodeURIComponent("name='Side Quest BackUp' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+  const res=await gApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=drive&fields=files(id)');
+  const data=await res.json();
+  if(data.files&&data.files[0]){gBackupFolderId=data.files[0].id;}
+  else{
+    const res2=await gApi('https://www.googleapis.com/drive/v3/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Side Quest BackUp',mimeType:'application/vnd.google-apps.folder'})});
+    const d2=await res2.json(); gBackupFolderId=d2.id;
+  }
+  try{localStorage.setItem('sidequest-backup-folder',gBackupFolderId);}catch{}
+  return gBackupFolderId;
+}
+async function gFindInFolder(name,folderId){
+  const q=encodeURIComponent("name='"+name.replace(/'/g,"\\'")+"' and '"+folderId+"' in parents and trashed=false");
+  const res=await gApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=drive&fields=files(id)');
+  const data=await res.json();
+  return (data.files&&data.files[0]&&data.files[0].id)||null;
+}
+async function gPutNamed(name,folderId,payload,existingId){
+  const body=JSON.stringify(payload);
+  if(existingId){
+    await gApi('https://www.googleapis.com/upload/drive/v3/files/'+existingId+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+    return existingId;
+  }
+  const boundary='sqb'+Date.now();
+  const meta=JSON.stringify({name,parents:[folderId],mimeType:'application/json'});
+  const mp='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--'+boundary+'--';
+  const res=await gApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary},body:mp});
+  const d=await res.json(); return d.id;
+}
+async function gWeeklyBackup(){
+  if(!gToken)return;
+  const monday=gWeekMonday();
+  let last=''; try{last=localStorage.getItem('sidequest-backup-week')||'';}catch{}
+  if(last===monday)return;                      // already backed up this week
+  try{
+    const folder=await gEnsureFolder();
+    const payload={events,dismissedEvents:dismissed,weekOf:monday,backedUpAt:Date.now()};
+    const datedName='Side Quest Backup '+monday+'.json';        // permanent, dated
+    await gPutNamed(datedName,folder,payload,await gFindInFolder(datedName,folder));
+    const latestName='sidequest_backup_latest.json';            // rolling, replaced weekly
+    await gPutNamed(latestName,folder,payload,await gFindInFolder(latestName,folder));
+    try{localStorage.setItem('sidequest-backup-week',monday);}catch{}
+    showToast('Weekly backup saved to Drive');
+  }catch(e){console.warn('Weekly backup failed',e);}
 }
 
 function bNav(){
