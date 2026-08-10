@@ -13,6 +13,7 @@
 <link rel="icon" type="image/png" sizes="128x128" href="/icons/favicon.png?v=4">
 <link rel="shortcut icon" href="/icons/favicon.png?v=4">
 <title>Side Quest</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;0,6..96,700;1,6..96,400;1,6..96,500;1,6..96,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -379,6 +380,7 @@ let lightboxSrc=null;
 let toastTm=null,rafId=null;
 let gridOpen=false,jumpDate=null,detDate=null;
 let discovered=[],dismissed=[],discDate='',discCat='all';
+let gClientId='',gToken='',gTokenClient=null,gDriveFileId=null,gSync='off',gSyncTimer=null;
 
 // UTILS
 const p2=n=>String(n).padStart(2,'0');
@@ -487,7 +489,7 @@ function loadData(){
   // One-time migration: clear confirmed flag on recurring events
   try{if(!localStorage.getItem('aroundtown-mig1')){const had=events.some(e=>e.isRecurring&&e.confirmed);if(had){events=events.map(e=>e.isRecurring?{...e,confirmed:false}:e);saveData();}localStorage.setItem('aroundtown-mig1','1');}}catch{}
 }
-function saveData(){try{localStorage.setItem(SK,JSON.stringify(events));}catch(e){console.warn(e);}}
+function saveData(){try{localStorage.setItem(SK,JSON.stringify(events));}catch(e){console.warn(e);}gScheduleSync();}
 function saveKey(){try{localStorage.setItem(AKK,apiKey);}catch{}}
 function maskKey(k){if(!k)return'';const tail=k.slice(-4);return(k.length>11?k.slice(0,7):'sk-')+'••••••'+tail;}
 
@@ -612,7 +614,7 @@ function sanitizeEvent(r){
 }
 const DISM_KEY='aroundtown-dismissed';
 function loadDismissed(){try{const s=localStorage.getItem(DISM_KEY);const a=s?JSON.parse(s):[];dismissed=Array.isArray(a)?a.map(x=>typeof x==='string'?{id:x,date:''}:x).filter(x=>x&&x.id):[];}catch{dismissed=[];}}
-function saveDismissed(){try{localStorage.setItem(DISM_KEY,JSON.stringify(dismissed));}catch{}}
+function saveDismissed(){try{localStorage.setItem(DISM_KEY,JSON.stringify(dismissed));}catch{}gScheduleSync();}
 function isDismissed(id){return dismissed.some(x=>x.id===id);}
 // Prune dismissed ids whose event date is already in the past (keeps store small).
 function pruneDismissed(){const t=todayISO();const before=dismissed.length;dismissed=dismissed.filter(x=>!x.date||x.date>=t);if(dismissed.length!==before)saveDismissed();}
@@ -646,6 +648,119 @@ function bDiscover(){
   }).join('');
   const empty=`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing new for ${fmtD(discDate)}</div><div class="empty-s">Try another day or category — fresh finds land daily.</div></div>`;
   return `<div class="disc-wrap"><div class="disc-datestrip">${strip}</div><div class="disc-pills">${pills}</div><div class="disc-list">${cards||empty}</div></div>`;
+}
+
+// ---- Google Drive sync (additive; app works fully without it) ----
+const GKEY='sidequest-gclient', GSEEN='sidequest-gseen';
+const GDRIVE_FILE='sidequest_data.json';
+const GSCOPE='https://www.googleapis.com/auth/drive.file';
+function gLoadCfg(){try{gClientId=localStorage.getItem(GKEY)||'';}catch{gClientId='';}}
+function gSaveCfg(){try{if(gClientId)localStorage.setItem(GKEY,gClientId);else localStorage.removeItem(GKEY);}catch{}}
+function gReady(){return !!(window.google&&google.accounts&&google.accounts.oauth2);}
+function gStatusLabel(){return {off:'Not connected',connecting:'Connecting…',syncing:'Syncing…',on:'Connected ✓',error:'Error — tap Connect to retry'}[gSync]||'Not connected';}
+function gInit(){
+  if(!gClientId||!gReady())return false;
+  if(gTokenClient)return true;
+  try{
+    gTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:gClientId, scope:GSCOPE,
+      callback:resp=>{ if(resp&&resp.access_token){gToken=resp.access_token; try{localStorage.setItem(GSEEN,'1');}catch{} gAfterAuth(); } else { gSync='error'; render(); } }
+    });
+    return true;
+  }catch(e){console.warn('GIS init failed',e);return false;}
+}
+function gConnect(){
+  if(!gClientId){showToast('Enter your Client ID first');return;}
+  if(!gReady()){showToast('Google sign-in still loading — try again');return;}
+  if(!gInit()){showToast('Could not start Google sign-in');return;}
+  gSync='connecting';render();
+  try{ gTokenClient.requestAccessToken({prompt: gToken?'':'consent'}); }catch(e){gSync='error';render();}
+}
+function gDisconnect(){
+  try{ if(gToken&&gReady()) google.accounts.oauth2.revoke(gToken,()=>{}); }catch{}
+  gToken='';gSync='off';gDriveFileId=null;try{localStorage.removeItem(GSEEN);}catch{}
+  showToast('Disconnected from Drive');render();
+}
+async function gApi(url,opts){
+  opts=opts||{}; opts.headers=Object.assign({Authorization:'Bearer '+gToken},opts.headers||{});
+  const res=await fetch(url,opts);
+  if(res.status===401){gToken='';gSync='error';throw new Error('Drive auth expired');}
+  if(!res.ok)throw new Error('Drive HTTP '+res.status);
+  return res;
+}
+async function gFindFile(){
+  const q=encodeURIComponent("name='"+GDRIVE_FILE+"' and trashed=false");
+  const res=await gApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=drive&fields=files(id,modifiedTime)');
+  const data=await res.json();
+  gDriveFileId=(data.files&&data.files[0]&&data.files[0].id)||null;
+  return gDriveFileId;
+}
+async function gReadFile(){
+  if(!gDriveFileId)return null;
+  const res=await gApi('https://www.googleapis.com/drive/v3/files/'+gDriveFileId+'?alt=media');
+  return await res.json();
+}
+async function gWriteFile(payload){
+  const body=JSON.stringify(payload);
+  if(gDriveFileId){
+    await gApi('https://www.googleapis.com/upload/drive/v3/files/'+gDriveFileId+'?uploadType=media',
+      {method:'PATCH',headers:{'Content-Type':'application/json'},body});
+  }else{
+    const boundary='sqboundary'+Date.now();
+    const meta=JSON.stringify({name:GDRIVE_FILE,mimeType:'application/json'});
+    const multipart='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--'+boundary+'--';
+    const res=await gApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+      {method:'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary},body:multipart});
+    const data=await res.json(); gDriveFileId=data.id;
+  }
+}
+function gMergeById(localArr,remoteArr){
+  const m=new Map();
+  (remoteArr||[]).forEach(e=>{if(e&&e.id!=null)m.set(String(e.id),e);});
+  (localArr||[]).forEach(e=>{if(e&&e.id!=null)m.set(String(e.id),e);}); // local wins on conflict
+  return [...m.values()];
+}
+function gMergeDismissed(localArr,remoteArr){
+  const m=new Map();
+  (remoteArr||[]).concat(localArr||[]).forEach(d=>{ if(!d)return; const id=typeof d==='string'?d:d.id; if(id==null)return; const cand=typeof d==='string'?{id:String(id),date:''}:d; const cur=m.get(String(id)); if(!cur||((cand.date||'')>(cur.date||'')))m.set(String(id),cand); });
+  return [...m.values()];
+}
+async function gAfterAuth(){
+  try{
+    gSync='syncing';render();
+    await gFindFile();
+    const remote=await gReadFile();
+    if(remote){
+      events=gMergeById(events,remote.events);
+      dismissed=gMergeDismissed(dismissed,remote.dismissedEvents);
+    }
+    gSync='on';
+    saveData();saveDismissed();   // persist merged locally + schedule a push
+    gScheduleSync(true);          // ensure an immediate reconcile push
+    render();
+  }catch(e){console.warn('Drive sync failed',e);gSync='error';render();}
+}
+function gScheduleSync(immediate){
+  if(gSync!=='on'&&gSync!=='syncing')return;   // only when connected
+  if(!gToken)return;
+  if(gSyncTimer)clearTimeout(gSyncTimer);
+  gSyncTimer=setTimeout(async()=>{
+    try{ if(!gDriveFileId)await gFindFile(); await gWriteFile({events,dismissedEvents:dismissed,updatedAt:Date.now()}); }
+    catch(e){console.warn('Drive push failed',e);gSync='error';render();}
+  }, immediate?0:1500);
+}
+function gBootReconnect(){
+  try{
+    if(!gClientId)return;
+    let seen=false; try{seen=!!localStorage.getItem(GSEEN);}catch{}
+    if(!seen)return;
+    let tries=0;
+    const t=setInterval(()=>{
+      tries++;
+      if(gReady()){ clearInterval(t); if(gInit()){ gSync='connecting'; render(); try{gTokenClient.requestAccessToken({prompt:''});}catch(e){} } }
+      else if(tries>20){ clearInterval(t); }   // ~6s, then give up silently
+    },300);
+  }catch(e){}
 }
 
 function bNav(){
@@ -822,6 +937,9 @@ function bSettings(){
   return`<div class="set-sec">
   <div class="set-card">
     <div class="set-row"><div class="set-rt">AI Extraction</div><div class="set-rd">Enter your Anthropic API key to enable photo and caption extraction. Get one at <strong>console.anthropic.com</strong>. Your key is stored only on this device.</div>${(apiKey&&!akEdit)?`<div class="ak-locked"><span class="ak-mask">${esc(maskKey(apiKey))}</span><span class="ak-set">✓ Saved</span></div><button class="btn-s" data-a="ake" style="width:100%;margin-top:10px">Edit Key</button>`:`<input class="fi" id="akInput" type="password" placeholder="sk-ant-…" value="${esc(apiKey)}" autocomplete="off" spellcheck="false" autocapitalize="off"><div class="ak-btns"><button class="btn-p" data-a="sk" style="margin-top:10px">Save API Key</button>${apiKey?`<button class="btn-s" data-a="akx" style="margin-top:10px;width:auto;white-space:nowrap">Cancel</button>`:''}</div>`}</div>
+  </div>
+  <div class="set-card">
+    <div class="set-row"><div class="set-rt">Google Drive Sync</div><div class="set-rd">Back up your events and keep them across devices. Paste your Google OAuth <strong>Client ID</strong>, then Connect. Everything is stored in a single <em>sidequest_data.json</em> in your Drive. Your Client ID stays on this device.</div><input class="fi" id="gcid" type="text" placeholder="…apps.googleusercontent.com" value="${esc(gClientId)}" autocomplete="off" spellcheck="false" autocapitalize="off" style="margin-top:8px"><div class="ak-btns"><button class="btn-s" data-a="gsave" style="margin-top:10px">Save Client ID</button>${gSync==='on'?`<button class="btn-s" data-a="gdisc" style="margin-top:10px;width:auto;white-space:nowrap">Disconnect</button>`:`<button class="btn-p" data-a="gconn" style="margin-top:10px">Connect Google Drive</button>`}</div><div class="set-rd" style="margin-top:8px">Status: <strong>${gStatusLabel()}</strong></div></div>
   </div>
   <div class="set-card">
     <div class="set-row"><div class="set-rt">Add to Home Screen</div><div class="set-rd">In Safari: Share, then "Add to Home Screen" for a fullscreen web app.</div></div>
@@ -1012,6 +1130,9 @@ function syncDrafts(){
 }
 const A={
   sv:b=>{view=b.dataset.v;selDay=null;search='';detDate=null;jumpDate=null;akEdit=false;render();},
+  gsave:()=>{const v=(document.getElementById('gcid')?.value||'').trim();gClientId=v;gSaveCfg();gTokenClient=null;showToast(v?'Client ID saved ✓':'Client ID cleared');render();},
+  gconn:()=>gConnect(),
+  gdisc:()=>gDisconnect(),
   dcd:b=>{discDate=b.dataset.d;render();},
   dcc:b=>{discCat=b.dataset.c;render();},
   dno:b=>{const id=b.dataset.id,card=b.closest('.disc-card'),ev=discovered.find(e=>e.id===id);const commit=()=>{if(!isDismissed(id)){dismissed.push({id,date:ev?ev.date:''});saveDismissed();}render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
@@ -1135,9 +1256,9 @@ document.getElementById('imp-fi').addEventListener('change',ev=>{
     const p=new URLSearchParams(window.location.search);
     const sharedText=[p.get('title')||'',p.get('text')||'',p.get('url')||''].filter(Boolean).join('\n').trim();
     if(sharedText){
-      loadData();loadDismissed();pruneDismissed();discDate=todayISO();
+      loadData();loadDismissed();pruneDismissed();gLoadCfg();discDate=todayISO();
       addOpen=true;addMode='paste';
-      render();syncDiscovered();
+      render();syncDiscovered();gBootReconnect();
       // Pre-fill paste area
       requestAnimationFrame(()=>{
         const ta=document.getElementById('paste-inp');
@@ -1146,7 +1267,7 @@ document.getElementById('imp-fi').addEventListener('change',ev=>{
       return;
     }
   }catch{}
-  loadData();loadDismissed();pruneDismissed();discDate=todayISO();render();syncDiscovered();
+  loadData();loadDismissed();pruneDismissed();gLoadCfg();discDate=todayISO();render();syncDiscovered();gBootReconnect();
 })();
 </script>
 </body>
