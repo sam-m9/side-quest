@@ -353,6 +353,45 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .disc-btn.primary{background:var(--pine);color:#fff;border-color:var(--pine)}
 .nb{position:relative}
 .nb-badge{position:absolute;top:0;right:calc(50% - 22px);background:var(--maroon);color:#fff;font-size:9px;min-width:15px;height:15px;line-height:15px;border-radius:8px;font-family:var(--mono);padding:0 3px;text-align:center}
+/* HAPPY HOURS */
+.hh-wrap{display:flex;flex-direction:column}
+.hh-dow-strip{display:flex;gap:6px;padding:14px 22px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0}
+.hh-dow{flex:1;min-width:34px;padding:8px 2px;border:1px solid var(--hair);border-radius:10px;background:var(--panel);color:var(--ink-soft);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.02em;cursor:pointer;text-align:center}
+.hh-dow.on{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.hh-list{padding:12px 22px;display:flex;flex-direction:column;gap:12px}
+.hh-empty{padding:32px 0;text-align:center;color:var(--taupe);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.hh-card{border:1px solid var(--hair);border-radius:14px;background:var(--panel);overflow:hidden;display:flex}
+.hh-spine{width:4px;background:var(--maroon);flex-shrink:0}
+.hh-body{flex:1;padding:14px 14px 12px}
+.hh-name{font-family:var(--disp);font-size:17px;font-weight:600;color:var(--ink);line-height:1.2;margin-bottom:4px}
+.hh-meta{font-family:var(--mono);font-size:11px;color:var(--taupe);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.hh-deal{font-family:var(--mono);font-size:12px;color:var(--maroon);margin-bottom:8px}
+.hh-day-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.hh-tag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--hair);color:var(--ink-soft)}
+.hh-tag.cur{background:var(--maroon);color:#fff}
+.hh-btns{display:flex;gap:8px}
+.hh-btn{flex:1;padding:9px;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid var(--hair)}
+.hh-btn.ghost{background:transparent;color:var(--ink-soft)}
+.hh-btn.danger{background:transparent;color:var(--maroon);border-color:var(--maroon)}
+.hh-add-wrap{padding:0 22px 4px}
+.hh-add-btn{width:100%;padding:13px;border:1.5px dashed var(--hair2);border-radius:12px;background:transparent;color:var(--taupe);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.hh-form{border:1px solid var(--hair);border-radius:14px;background:var(--paper-alt);padding:16px;margin:8px 22px 4px}
+.hh-form-ttl{font-family:var(--disp);font-size:18px;font-weight:600;margin-bottom:14px;color:var(--ink)}
+.hh-dow-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.hh-dow-cb{padding:6px 10px;border-radius:8px;border:1px solid var(--hair);background:var(--panel);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--ink-soft)}
+.hh-dow-cb.on{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.hh-form-row{margin-bottom:10px}
+.hh-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:4px}
+.hh-time-row{display:flex;gap:8px}
+.hh-time-row .fi{flex:1}
+.hh-daily{padding:14px 22px 10px;border-bottom:1px solid var(--hair);margin-bottom:6px}
+.hh-daily-hd{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--maroon);margin-bottom:10px}
+.hh-daily-card{display:flex;border:1px solid var(--hair);border-radius:10px;background:var(--panel);overflow:hidden;margin-bottom:8px}
+.hh-daily-spine{width:3px;background:var(--maroon);flex-shrink:0}
+.hh-daily-body{flex:1;padding:9px 12px}
+.hh-daily-name{font-family:var(--disp);font-size:15px;font-weight:600;color:var(--ink)}
+.hh-daily-info{font-family:var(--mono);font-size:11px;color:var(--taupe);letter-spacing:.04em;margin-top:2px}
+.hh-daily-deal{font-family:var(--mono);font-size:11px;color:var(--maroon);margin-top:1px}
 </style>
 </head>
 <body>
@@ -361,7 +400,10 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 <input type="file" id="imp-fi" accept=".json,application/json,text/plain" style="display:none">
 <script>
 'use strict';
-const SK='aroundtown-v4',AKK='aroundtown-ak';
+const SK='aroundtown-v4',AKK='aroundtown-ak',HH_KEY='sidequest-happyhours';
+const DOW_KEYS=['sun','mon','tue','wed','thu','fri','sat'];
+const DOW_SHORT=['S','M','T','W','T','F','S'];
+const DOW_ABB=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS3=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const CAT={music:{i:'🎵',c:'#B06A3B',l:'Music'},food:{i:'🍽️',c:'#B08A2C',l:'Food & Drink'},art:{i:'🎨',c:'#8A5A7A',l:'Art'},sports:{i:'⚡',c:'#5E7392',l:'Sports'},social:{i:'🎉',c:'#4E8478',l:'Social'},film:{i:'🎬',c:'#6A6199',l:'Film'},comedy:{i:'😂',c:'#A85C4C',l:'Comedy'},outdoors:{i:'🌿',c:'#7E7A3C',l:'Outdoors'},other:{i:'📍',c:'#8C846E',l:'Other'}};
@@ -380,6 +422,7 @@ let lightboxSrc=null;
 let toastTm=null,rafId=null;
 let gridOpen=false,jumpDate=null,detDate=null;
 let discovered=[],dismissed=[],discDate='',discCat='all';
+let happyHours=[],hhDay='',hhAddOpen=false,hhEditId=null,hhF={};
 let gClientId='',gToken='',gTokenClient=null,gDriveFileId=null,gSync='off',gSyncTimer=null,gBackupFolderId=null;
 
 // UTILS
@@ -491,6 +534,14 @@ function loadData(){
 }
 function saveData(){try{localStorage.setItem(SK,JSON.stringify(events));}catch(e){console.warn(e);}gScheduleSync();}
 function saveKey(){try{localStorage.setItem(AKK,apiKey);}catch{}}
+function loadHappyHours(){try{const s=localStorage.getItem(HH_KEY);happyHours=s?JSON.parse(s):[];}catch{happyHours=[];}}
+function saveHappyHours(){try{localStorage.setItem(HH_KEY,JSON.stringify(happyHours));}catch(e){console.warn(e);}gScheduleSync();}
+function todayDow(){return DOW_KEYS[new Date().getDay()];}
+function dsDow(ds){try{const[y,m,d]=ds.split('-').map(Number);return DOW_KEYS[new Date(y,m-1,d).getDay()];}catch{return '';}}
+function hhForDow(dow){return happyHours.filter(h=>h.days&&h.days.includes(dow));}
+function fmt12(t){if(!t)return'';const[h,mn]=t.split(':').map(Number);if(isNaN(h))return t;const ap=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}${mn?`:${String(mn).padStart(2,'0')}`:''} ${ap}`;}
+function normTo24(s){if(!s)return'';const m=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);if(!m)return'';let h=+m[1],mn=+(m[2]||0);const ap=(m[3]||'').toLowerCase();if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;return`${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;}
+function syncHHForm(){if(!hhAddOpen)return;hhF={...hhF,title:document.getElementById('hhf-name')?.value??hhF.title??'',location:document.getElementById('hhf-loc')?.value??hhF.location??'',timeStart:document.getElementById('hhf-ts')?.value||hhF.timeStart||'17:00',timeEnd:document.getElementById('hhf-te')?.value||hhF.timeEnd||'19:00',deal:document.getElementById('hhf-deal')?.value??hhF.deal??'',link:document.getElementById('hhf-link')?.value??hhF.link??''};}
 function maskKey(k){if(!k)return'';const tail=k.slice(-4);return(k.length>11?k.slice(0,7):'sk-')+'••••••'+tail;}
 
 // TOAST
@@ -644,10 +695,36 @@ function bDiscover(){
     const thumb=e.thumbnail?`<div class="disc-thumb"><img src="${e.thumbnail}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`:'';
     const meta=[e.time,e.location].filter(Boolean).join(' · ');
     const cc=CAT[e.category]||CAT.other;
-    return `<div class="disc-card" data-id="${e.id}">${thumb}<div class="disc-body"><div class="disc-cat" style="color:${cc.c}">${cc.i} ${cc.l}</div><div class="disc-title">${esc(e.title)}</div>${meta?`<div class="disc-meta">${esc(meta)}</div>`:''}${e.price?`<div class="disc-price">${esc(e.price)}</div>`:''}${e.description?`<div class="disc-desc">${esc(e.description)}</div>`:''}${e.notes?`<div class="disc-src">${esc(e.notes)}</div>`:''}<div class="disc-actions"><button class="disc-btn ghost" data-a="dno" data-id="${e.id}">Not Interested</button><button class="disc-btn primary" data-a="dae" data-id="${e.id}">+ Add to Events</button></div></div></div>`;
+    return `<div class="disc-card" data-id="${e.id}">${thumb}<div class="disc-body"><div class="disc-cat" style="color:${cc.c}">${cc.i} ${cc.l}</div><div class="disc-title">${esc(e.title)}</div>${meta?`<div class="disc-meta">${esc(meta)}</div>`:''}${e.price?`<div class="disc-price">${esc(e.price)}</div>`:''}${e.description?`<div class="disc-desc">${esc(e.description)}</div>`:''}${e.notes?`<div class="disc-src">${esc(e.notes)}</div>`:''}<div class="disc-actions"><button class="disc-btn ghost" data-a="dno" data-id="${e.id}">Not Interested</button><button class="disc-btn ghost" data-a="hhph" data-id="${e.id}" title="Save as recurring happy hour">🍺 Happy Hour</button><button class="disc-btn primary" data-a="dae" data-id="${e.id}">+ Add to Events</button></div></div></div>`;
   }).join('');
   const empty=`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing new for ${fmtD(discDate)}</div><div class="empty-s">Try another day or category — fresh finds land daily.</div></div>`;
   return `<div class="disc-wrap"><div class="disc-datestrip">${strip}</div><div class="disc-pills">${pills}</div><div class="disc-list">${cards||empty}</div></div>`;
+}
+
+// ---- HAPPY HOURS ----
+function bHappyHours(){
+  if(!hhDay)hhDay=todayDow();
+  const strip=DOW_KEYS.map((d,i)=>`<button class="hh-dow${hhDay===d?' on':''}" data-a="hhd" data-d="${d}">${DOW_SHORT[i]}</button>`).join('');
+  let formHtml='';
+  if(hhAddOpen){
+    const f=hhF;
+    const dayChecks=DOW_KEYS.map((d,i)=>`<button class="hh-dow-cb${(f.days||[]).includes(d)?' on':''}" data-a="hhtd" data-d="${d}">${DOW_ABB[i]}</button>`).join('');
+    formHtml=`<div class="hh-form"><div class="hh-form-ttl">${hhEditId?'Edit Happy Hour':'New Happy Hour'}</div><div class="hh-form-row"><div class="hh-label">Name</div><input class="fi" id="hhf-name" type="text" placeholder="Bar or restaurant name" value="${esc(f.title||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Location</div><input class="fi" id="hhf-loc" type="text" placeholder="Address or neighborhood" value="${esc(f.location||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Time</div><div class="hh-time-row"><input class="fi" id="hhf-ts" type="time" value="${esc(f.timeStart||'17:00')}"><input class="fi" id="hhf-te" type="time" value="${esc(f.timeEnd||'19:00')}"></div></div><div class="hh-form-row"><div class="hh-label">Days it recurs</div><div class="hh-dow-row">${dayChecks}</div></div><div class="hh-form-row"><div class="hh-label">Deal</div><input class="fi" id="hhf-deal" type="text" placeholder="$4 drafts, half-off wine…" value="${esc(f.deal||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Link (optional)</div><input class="fi" id="hhf-link" type="url" placeholder="https://…" value="${esc(f.link||'')}" autocomplete="off"></div><div class="ak-btns"><button class="btn-p" data-a="hhsv">Save</button><button class="btn-s" data-a="hhcx" style="width:auto;white-space:nowrap">Cancel</button></div></div>`;
+  }
+  const addBtn=hhAddOpen?'':
+    `<div class="hh-add-wrap"><button class="hh-add-btn" data-a="hhop">+ Add Happy Hour</button></div>`;
+  const list=hhForDow(hhDay);
+  let cards='';
+  if(list.length){
+    cards=list.map(h=>{
+      const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
+      const tags=DOW_KEYS.filter(d=>(h.days||[]).includes(d)).map((d,_,arr)=>{const i=DOW_KEYS.indexOf(d);return`<span class="hh-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`;}).join('');
+      return`<div class="hh-card"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${h.deal?`<div class="hh-deal">${esc(h.deal)}</div>`:''}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
+    }).join('');
+  }else{
+    cards=`<div class="hh-empty">No happy hours saved for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
+  }
+  return`<div class="hh-wrap"><div class="hh-dow-strip">${strip}</div>${formHtml}${addBtn}<div class="hh-list">${cards}</div></div>`;
 }
 
 // ---- Google Drive sync (additive; app works fully without it) ----
@@ -733,9 +810,10 @@ async function gAfterAuth(){
     if(remote){
       events=gMergeById(events,remote.events);
       dismissed=gMergeDismissed(dismissed,remote.dismissedEvents);
+      if(Array.isArray(remote.happyHours))happyHours=gMergeById(happyHours,remote.happyHours);
     }
     gSync='on';
-    saveData();saveDismissed();   // persist merged locally + schedule a push
+    saveData();saveDismissed();saveHappyHours();   // persist merged locally + schedule a push
     gScheduleSync(true);          // ensure an immediate reconcile push
     render();
     gWeeklyBackup();              // once-per-week snapshot into the backup folder
@@ -746,7 +824,7 @@ function gScheduleSync(immediate){
   if(!gToken)return;
   if(gSyncTimer)clearTimeout(gSyncTimer);
   gSyncTimer=setTimeout(async()=>{
-    try{ if(!gDriveFileId)await gFindFile(); await gWriteFile({events,dismissedEvents:dismissed,updatedAt:Date.now()}); }
+    try{ if(!gDriveFileId)await gFindFile(); await gWriteFile({events,dismissedEvents:dismissed,happyHours,updatedAt:Date.now()}); }
     catch(e){console.warn('Drive push failed',e);gSync='error';render();}
   }, immediate?0:1500);
 }
@@ -829,13 +907,14 @@ function bNav(){
     list:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
     plans:'<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
     past:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
-    discover:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="16 8 10 10 8 16 14 14 16 8"/></svg>'
+    discover:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="16 8 10 10 8 16 14 14 16 8"/></svg>',
+    hh:'<svg viewBox="0 0 24 24"><path d="M5 8h14v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8z"/><path d="M19 8h1a2 2 0 0 1 0 4h-1"/><path d="M9 3l1 5M12 3v5M15 3l-1 5"/></svg>'
   };
-  const tabs=[['cal','Cal'],['discover','Discover'],['list','List'],['plans','Plans'],['past','Past']];
+  const tabs=[['cal','Cal'],['discover','Discover'],['hh','Happy Hrs'],['list','List'],['plans','Plans'],['past','Past']];
   return`<nav class="bnav">${tabs.map(([v,l])=>{const bdg=(v==='discover'&&discTodayCount()>0)?`<span class="nb-badge">${discTodayCount()}</span>`:'';return `<button class="nb${view===v?' on':''}" data-a="sv" data-v="${v}">${ic[v]}${bdg}<span>${l}</span><span class="nb-ul"></span></button>`;}).join('')}</nav>`;
 }
 
-function bMain(){try{if(view==='cal')return bCal();if(view==='discover')return bDiscover();if(view==='list')return bList(false);if(view==='past')return bList(true);if(view==='plans')return bPlans();return bSettings();}catch(err){console.error(err);return`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Display Error</div><div class="empty-s"><button class="link-inline" onclick="location.reload()">Tap to reload</button></div></div>`;}}
+function bMain(){try{if(view==='cal')return bCal();if(view==='discover')return bDiscover();if(view==='hh')return bHappyHours();if(view==='list')return bList(false);if(view==='past')return bList(true);if(view==='plans')return bPlans();return bSettings();}catch(err){console.error(err);return`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Display Error</div><div class="empty-s"><button class="link-inline" onclick="location.reload()">Tap to reload</button></div></div>`;}}
 
 // ---- MONTH GRID (inline) ----
 function bMonthGrid(y,m){
@@ -934,10 +1013,24 @@ function bDayView(ds){
   const rel=relDayLabel(ds);
   const bar=`<div class="dayview-bar"><button class="dayview-back" data-a="cj"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Full Agenda</button><div class="dayview-lbl">One Day</div></div>`;
   const header=`<div class="day-hd"><div class="day-hd-l${we?' we':''}">${hd}</div>${rel?`<div class="day-hd-r ${rel==='TODAY'?'today':''}">${rel}</div>`:''}</div>`;
-  if(!evs.length){
-    return bar+header+`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing this day</div><div class="empty-s">No events on ${esc(fmtD(ds))}. Tap <strong>Full Agenda</strong> to see everything.</div></div>`;
+  // Happy Hours for this day of week — always shown
+  const dow=dsDow(ds);
+  const todayHH=hhForDow(dow);
+  let hhSection='<div class="hh-daily"><div class="hh-daily-hd">🍺 Happy Hours</div>';
+  if(todayHH.length){
+    hhSection+=todayHH.map(h=>{
+      const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
+      const info=[h.location,time].filter(Boolean);
+      return`<div class="hh-daily-card"><div class="hh-daily-spine"></div><div class="hh-daily-body"><div class="hh-daily-name">${esc(h.title)}</div>${info.map(x=>`<div class="hh-daily-info">${esc(x)}</div>`).join('')}${h.deal?`<div class="hh-daily-deal">${esc(h.deal)}</div>`:''}</div></div>`;
+    }).join('');
+  }else{
+    hhSection+=`<div style="font-family:var(--mono);font-size:11px;color:var(--taupe)">None saved for this day — <button class="link-inline" data-a="hhdn">add one</button></div>`;
   }
-  return`${bar}${header}<div style="padding-bottom:20px">${evs.map(e=>bEventCard(e,ds,false)).join('')}</div>`;
+  hhSection+='</div>';
+  if(!evs.length){
+    return bar+header+hhSection+`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing this day</div><div class="empty-s">No events on ${esc(fmtD(ds))}. Tap <strong>Full Agenda</strong> to see everything.</div></div>`;
+  }
+  return`${bar}${header}${hhSection}<div style="padding-bottom:20px">${evs.map(e=>bEventCard(e,ds,false)).join('')}</div>`;
 }
 
 // ---- CALENDAR / AGENDA HOME ----
@@ -1195,6 +1288,32 @@ const A={
   gdisc:()=>gDisconnect(),
   dcd:b=>{discDate=b.dataset.d;render();},
   dcc:b=>{discCat=b.dataset.c;render();},
+  hhd:b=>{hhDay=b.dataset.d;render();},
+  hhop:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};render();},
+  hhcx:()=>{syncHHForm();hhAddOpen=false;hhEditId=null;hhF={};render();},
+  hhtd:b=>{syncHHForm();const d=b.dataset.d,days=hhF.days||[];hhF={...hhF,days:days.includes(d)?days.filter(x=>x!==d):[...days,d]};render();},
+  hhed:b=>{const h=happyHours.find(x=>x.id===b.dataset.id);if(!h)return;hhEditId=h.id;hhF={...h};hhAddOpen=true;render();},
+  hhrm:b=>{if(!confirm('Remove this happy hour?'))return;happyHours=happyHours.filter(h=>h.id!==b.dataset.id);saveHappyHours();showToast('Removed');render();},
+  hhsv:()=>{
+    syncHHForm();
+    const title=(hhF.title||'').trim();
+    if(!title){showToast('Name is required');return;}
+    const days=hhF.days||[];
+    if(!days.length){showToast('Pick at least one day');return;}
+    const editId=hhEditId;
+    const hh={id:editId||'hh_'+Date.now(),title,location:(hhF.location||'').trim(),timeStart:hhF.timeStart||'17:00',timeEnd:hhF.timeEnd||'19:00',deal:(hhF.deal||'').trim(),link:(hhF.link||'').trim(),days,addedAt:editId?(happyHours.find(x=>x.id===editId)?.addedAt||new Date().toISOString()):new Date().toISOString()};
+    if(editId){happyHours=happyHours.map(h=>h.id===editId?hh:h);showToast('Updated ✓');}
+    else{happyHours.push(hh);showToast('Happy hour saved ✓');}
+    saveHappyHours();hhAddOpen=false;hhEditId=null;hhF={};render();
+  },
+  hhph:b=>{
+    const raw=discovered.find(e=>e.id===b.dataset.id);if(!raw)return;
+    const[ts,te]=splitRange(raw.time||'');
+    hhAddOpen=true;hhEditId=null;
+    hhF={title:raw.title||'',location:raw.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:raw.price||'',link:raw.link||'',days:[hhDay||todayDow()]};
+    view='hh';render();
+  },
+  hhdn:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};view='hh';render();},
   dno:b=>{const id=b.dataset.id,card=b.closest('.disc-card'),ev=discovered.find(e=>e.id===id);const commit=()=>{if(!isDismissed(id)){dismissed.push({id,date:ev?ev.date:''});saveDismissed();}render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   dae:b=>{const id=b.dataset.id,raw=discovered.find(e=>e.id===id);if(!raw)return;const card=b.closest('.disc-card');const commit=()=>{const ev=sanitizeEvent({...raw,status:'want'});if(!events.some(x=>x.id===ev.id)){events.push(ev);saveData();}if(!isDismissed(id)){dismissed.push({id,date:raw.date});saveDismissed();}showToast('✓ Added to your events');render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   sf:b=>{filter=b.dataset.f;render();},
@@ -1316,7 +1435,7 @@ document.getElementById('imp-fi').addEventListener('change',ev=>{
     const p=new URLSearchParams(window.location.search);
     const sharedText=[p.get('title')||'',p.get('text')||'',p.get('url')||''].filter(Boolean).join('\n').trim();
     if(sharedText){
-      loadData();loadDismissed();pruneDismissed();gLoadCfg();discDate=todayISO();
+      loadData();loadDismissed();loadHappyHours();pruneDismissed();gLoadCfg();discDate=todayISO();hhDay=todayDow();
       addOpen=true;addMode='paste';
       render();syncDiscovered();gBootReconnect();
       // Pre-fill paste area
@@ -1327,7 +1446,7 @@ document.getElementById('imp-fi').addEventListener('change',ev=>{
       return;
     }
   }catch{}
-  loadData();loadDismissed();pruneDismissed();gLoadCfg();discDate=todayISO();render();syncDiscovered();gBootReconnect();
+  loadData();loadDismissed();loadHappyHours();pruneDismissed();gLoadCfg();discDate=todayISO();hhDay=todayDow();render();syncDiscovered();gBootReconnect();
 })();
 </script>
 </body>
