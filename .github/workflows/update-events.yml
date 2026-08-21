@@ -1,0 +1,48 @@
+name: Fetch Instagram events
+
+on:
+  schedule:
+    - cron: "15 6 * * *"   # 06:15 UTC daily
+  workflow_dispatch: {}    # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-events
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch Instagram events
+        env:
+          APIFY_API_TOKEN:     ${{ secrets.APIFY_API_TOKEN }}
+          APIFY_ACTOR_TASK_ID: ${{ secrets.APIFY_ACTOR_TASK_ID }}
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/fetch_instagram_events.py
+
+      - name: Commit discovered.json if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- public/discovered.json; then
+            echo "No changes to public/discovered.json"
+            exit 0
+          fi
+          git add public/discovered.json
+          git commit -m "chore: refresh instagram events [skip ci]"
+          git push origin HEAD:main
