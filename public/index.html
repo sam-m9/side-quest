@@ -574,34 +574,31 @@ function dsDow(ds){try{const[y,m,d]=ds.split('-').map(Number);return DOW_KEYS[ne
 function hhForDow(dow){return happyHours.filter(h=>h.days&&h.days.includes(dow));}
 function hhFindByTitle(title){const t=(title||'').trim().toLowerCase();if(!t)return null;return happyHours.find(h=>(h.title||'').trim().toLowerCase()===t)||null;}
 const PRICE_ONE=/\$\s?\d+(?:\.\d+)?(?:\s?-\s?\$?\d+(?:\.\d+)?)?|\bfree\b|half[\s-]?off|\d+%\s?off|\bbogo\b/i;
-const PRICE_RE=new RegExp(PRICE_ONE.source,'ig');
-function parseOffers(deal){
-  if(!deal)return[];
-  // Normalize bullets/pipes/semicolons to newlines
-  let text=deal.replace(/\s*[•·|]\s*/g,'\n').replace(/;/g,'\n');
-  let lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const expanded=[];
-  lines.forEach(line=>{
-    const hits=line.match(PRICE_RE);
-    if(hits&&hits.length>1){
-      // Prefer comma-splitting when each piece carries its own price (handles price-last)
-      let parts=null;
-      if(line.includes(',')){
-        const c=line.split(',').map(s=>s.trim()).filter(Boolean);
-        if(c.filter(p=>PRICE_ONE.test(p)).length>=c.length-1)parts=c;
-      }
-      // Fall back: split before each price token (price-first single-line)
-      if(!parts)parts=line.split(/(?=\$\s?\d|\bfree\b|\bbogo\b)/i).map(s=>s.replace(/^[\s,]+|[\s,]+$/g,'')).filter(Boolean);
-      parts.forEach(p=>expanded.push(p));
-    }else{expanded.push(line);}
-  });
-  return expanded.map(line=>{
-    const m=line.match(PRICE_ONE);
-    let price='',item=line;
-    if(m){price=m[0].replace(/\s+/g,'').replace(/^free$/i,'Free');item=line.replace(m[0],'').replace(/^[\s:,–—-]+|[\s:,–—-]+$/g,'').trim();}
+// Filler words to strip when pulling an item name out of prose next to a price.
+const OFFER_TRIM=new Set(['and','or','the','a','an','our','all','get','enjoy','only','plus','with','featuring','feature','features','include','includes','including','deals','deal','daily','happy','hour','hours','special','specials','available','avail','from','open','until','til','till','close','every','day','days','also','select','for','of','at','in','on','is','are','to','your','you','&','']);
+function _offHasLetter(w){return /[a-z]/i.test(w);}
+function _offWords(s){return s.replace(/[^\w\s/&+-]/g,' ').split(/\s+/).filter(Boolean);}
+// Price-anchored parser: for each price found, grab only the 1-2 meaningful
+// words next to it. Prose/filler with no adjacent price is ignored, so a
+// narrative caption yields a clean itemized list instead of sentence fragments.
+function parseOffers(text){
+  if(!text)return[];
+  const clauses=text.split(/[,;\n•·|]|\.\s|\s+and\s+|\s+&\s+|\s+plus\s+/i);
+  const out=[];
+  clauses.forEach(cl=>{
+    const m=cl.match(PRICE_ONE);
+    if(!m)return;
+    let price=m[0].replace(/\s+/g,'').replace(/^free$/i,'Free').replace(/^half-?off$/i,'Half-off').replace(/^bogo$/i,'BOGO');
+    const idx=cl.toLowerCase().indexOf(m[0].toLowerCase());
+    const before=cl.slice(0,idx),after=cl.slice(idx+m[0].length);
+    let pick=[],cand=_offWords(before);
+    for(let i=cand.length-1;i>=0&&pick.length<2;i--){const w=cand[i];if(!_offHasLetter(w)||OFFER_TRIM.has(w.toLowerCase())){if(pick.length)break;else continue;}pick.unshift(w);}
+    if(!pick.length){cand=_offWords(after);for(let i=0;i<cand.length&&pick.length<2;i++){const w=cand[i];if(!_offHasLetter(w)||OFFER_TRIM.has(w.toLowerCase())){if(pick.length)break;else continue;}pick.push(w);}}
+    let item=pick.join(' ').trim();
     if(!item){item=price;price='';}
-    return{item,price};
+    out.push({item,price});
   });
+  return out;
 }
 function offerScore(arr){return arr.filter(o=>o.price&&o.item&&!/^\$/.test(o.item)).length;}
 function bestOffers(h){
