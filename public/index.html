@@ -49,7 +49,7 @@ html,body{background:var(--paper);height:100%;font-family:var(--body);color:var(
 .mh-gear.on{color:var(--pine)}
 
 /* CONTENT */
-.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));overscroll-behavior:none;background:var(--paper)}
+.content{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));overscroll-behavior:contain;background:var(--paper)}
 
 /* CONTROL BLOCK (agenda) */
 .ctrl{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--hair)}
@@ -178,7 +178,7 @@ html,body{background:var(--paper);height:100%;font-family:var(--body);color:var(
 /* OVERLAYS */
 .ovl-bg{position:fixed;inset:0;background:rgba(28,26,21,.55);z-index:200;-webkit-transform:translateZ(0);transform:translateZ(0);animation:fadein .2s ease}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
-.sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;background:var(--paper);z-index:201;padding:0 0 calc(40px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:auto;animation:sheetUp .28s cubic-bezier(.22,1,.36,1);border-top:2px solid var(--ink);overscroll-behavior:contain}
+.sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;background:var(--paper);z-index:201;padding:0 0 calc(40px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:scroll;-webkit-overflow-scrolling:touch;animation:sheetUp .28s cubic-bezier(.22,1,.36,1);border-top:2px solid var(--ink);overscroll-behavior:contain}
 .sheet::-webkit-scrollbar{display:none}
 @keyframes sheetUp{from{transform:translateX(-50%) translateY(40px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
 .sh-hd{position:sticky;top:0;background:var(--paper);border-bottom:2px solid var(--ink);padding:max(18px,calc(env(safe-area-inset-top,14px))) 22px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;z-index:2}
@@ -249,7 +249,7 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .link-inline{background:none;border:none;color:var(--ink-soft);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 
 /* DETAIL */
-.det{position:fixed;inset:0;background:var(--paper);z-index:300;overflow-y:auto;overscroll-behavior:none;overflow-x:hidden;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)}
+.det{position:fixed;inset:0;background:var(--paper);z-index:300;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;overflow-x:hidden;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)}
 .det::-webkit-scrollbar{display:none}
 .det-in{max-width:460px;margin:0 auto;min-height:100vh;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));overflow-x:hidden}
 .det-bar{padding:max(60px,calc(env(safe-area-inset-top,0px) + 12px)) 18px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--paper);border-bottom:2px solid var(--ink);z-index:10}
@@ -373,6 +373,20 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-btn{flex:1;padding:9px;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid var(--hair)}
 .hh-btn.ghost{background:transparent;color:var(--ink-soft)}
 .hh-btn.danger{background:transparent;color:var(--maroon);border-color:var(--maroon)}
+.hh-card-tap{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hh-det{padding:24px 22px}
+.hh-det-title{font-family:var(--disp);font-size:26px;font-weight:700;line-height:1.2;margin-bottom:14px;color:var(--ink)}
+.hh-det-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--hair)}
+.hh-det-row:last-of-type{border-bottom:none}
+.hh-det-ico{font-size:16px;line-height:1.4;flex-shrink:0;width:22px;text-align:center}
+.hh-det-val{font-size:14px;color:var(--ink-soft);line-height:1.4;word-break:break-word}
+.hh-det-deal{font-family:var(--mono);font-size:13px;color:var(--maroon);font-weight:600}
+.hh-det-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.hh-det-tag{padding:5px 10px;border-radius:8px;border:1px solid var(--hair);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--taupe)}
+.hh-det-tag.cur{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.hh-det-btns{display:flex;gap:10px;margin-top:20px}
+.hh-det-btn{flex:1;padding:13px;border-radius:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--hair);background:transparent;color:var(--ink-soft)}
+.hh-det-btn.danger{color:var(--maroon);border-color:var(--maroon)}
 .hh-add-wrap{padding:0 22px 4px}
 .hh-add-btn{width:100%;padding:13px;border:1.5px dashed var(--hair2);border-radius:12px;background:transparent;color:var(--taupe);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .hh-form{border:1px solid var(--hair);border-radius:14px;background:var(--paper-alt);padding:16px;margin:8px 22px 4px}
@@ -425,7 +439,7 @@ let lightboxSrc=null;
 let toastTm=null,rafId=null;
 let gridOpen=false,jumpDate=null,detDate=null;
 let discovered=[],dismissed=[],discDate='',discCat='all';
-let happyHours=[],hhDay='',hhAddOpen=false,hhEditId=null,hhF={};
+let happyHours=[],hhDay='',hhAddOpen=false,hhEditId=null,hhF={},hhDetId=null;
 let gClientId='',gToken='',gTokenClient=null,gDriveFileId=null,gSync='off',gSyncTimer=null,gBackupFolderId=null;
 
 // UTILS
@@ -679,6 +693,19 @@ async function syncDiscovered(){
     const raw=await res.json();
     if(!Array.isArray(raw))return;
     discovered=raw.map(sanitizeEvent).filter(e=>e.date&&e.title);
+    // Auto-promote any discovered event that mentions "happy hour"
+    const hhIds=new Set(happyHours.map(h=>h.id));
+    let hhChanged=false;
+    discovered.forEach(e=>{
+      const lc=(e.title+' '+(e.description||'')).toLowerCase();
+      const autoId='ig-hh-'+e.id;
+      if((e.happyHour||lc.includes('happy hour'))&&!hhIds.has(autoId)){
+        const[ts,te]=splitRange(e.time||'');
+        happyHours.push({id:autoId,title:e.title,location:e.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:e.price||'',link:e.link||'',notes:e.notes||'',days:[...DOW_KEYS],addedAt:new Date().toISOString()});
+        hhIds.add(autoId);hhChanged=true;
+      }
+    });
+    if(hhChanged){saveHappyHours();showToast('🍺 Happy hour added from feed');}
     render();
   }catch(e){console.warn('discovered fetch failed',e);}
 }
@@ -722,12 +749,25 @@ function bHappyHours(){
     cards=list.map(h=>{
       const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
       const tags=DOW_KEYS.filter(d=>(h.days||[]).includes(d)).map((d,_,arr)=>{const i=DOW_KEYS.indexOf(d);return`<span class="hh-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`;}).join('');
-      return`<div class="hh-card"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${h.deal?`<div class="hh-deal">${esc(h.deal)}</div>`:''}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
+      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${h.deal?`<div class="hh-deal">${esc(h.deal)}</div>`:''}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
     }).join('');
   }else{
     cards=`<div class="hh-empty">No happy hours saved for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
   }
   return`<div class="hh-wrap"><div class="hh-dow-strip">${strip}</div>${formHtml}${addBtn}<div class="hh-list">${cards}</div></div>`;
+}
+function bHHDetail(h){
+  const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
+  const tags=DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).filter((_,i)=>(h.days||[]).includes(DOW_KEYS[i])).join('') ||
+    DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).join('');
+  const rows=[
+    time?`<div class="hh-det-row"><div class="hh-det-ico">🕔</div><div class="hh-det-val">${esc(time)}</div></div>`:'',
+    h.location?`<div class="hh-det-row"><div class="hh-det-ico">📍</div><div class="hh-det-val">${esc(h.location)}</div></div>`:'',
+    h.deal?`<div class="hh-det-row"><div class="hh-det-ico">🍺</div><div class="hh-det-val hh-det-deal">${esc(h.deal)}</div></div>`:'',
+    h.notes?`<div class="hh-det-row"><div class="hh-det-ico">📝</div><div class="hh-det-val">${esc(h.notes)}</div></div>`:'',
+    h.link?`<div class="hh-det-row"><div class="hh-det-ico">🔗</div><div class="hh-det-val"><a href="${esc(h.link)}" target="_blank" rel="noopener" style="color:var(--maroon);text-decoration:none">${esc(h.link.replace(/^https?:\/\//,''))}</a></div></div>`:'',
+  ].filter(Boolean).join('');
+  return`<div class="det"><div style="display:flex;align-items:center;padding:16px 22px 0;gap:12px"><button class="back-btn" data-a="hhdc" style="font-size:22px;background:none;border:none;cursor:pointer;color:var(--ink)">←</button><div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe)">Happy Hour</div></div><div class="hh-det"><div class="hh-det-title">${esc(h.title)}</div>${rows}<div class="hh-det-tags">${tags}</div><div class="hh-det-btns"><button class="hh-det-btn" data-a="hhdedit" data-id="${h.id}">Edit</button><button class="hh-det-btn danger" data-a="hhdel" data-id="${h.id}">Remove</button></div></div></div>`;
 }
 
 // ---- Google Drive sync (additive; app works fully without it) ----
@@ -1239,6 +1279,7 @@ function doRender(){
     if(!addOpen&&!detId&&view!=='settings')h+=`<button class="fab" data-a="oa" aria-label="Add event"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>`;
     if(addOpen)h+=bAddSheet();
     if(detId)h+=bDetail();
+    if(hhDetId){const hh=happyHours.find(x=>x.id===hhDetId);if(hh)h+=bHHDetail(hh);else hhDetId=null;}
     if(lightboxSrc)h+=`<div class="lightbox" data-a="zoomclose"><img src="${lightboxSrc}" alt=""><button class="lightbox-x" data-a="zoomclose">\u2715</button></div>`;
     document.getElementById('app').innerHTML=h;
     if(detId&&prevDetScroll>0){requestAnimationFrame(()=>{const d=document.querySelector('.det');if(d)d.scrollTop=prevDetScroll;});}
@@ -1296,6 +1337,10 @@ const A={
   hhop:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};render();},
   hhcx:()=>{syncHHForm();hhAddOpen=false;hhEditId=null;hhF={};render();},
   hhtd:b=>{syncHHForm();const d=b.dataset.d,days=hhF.days||[];hhF={...hhF,days:days.includes(d)?days.filter(x=>x!==d):[...days,d]};render();},
+  hhdv:b=>{const id=b.dataset?.id;if(!id)return;hhDetId=id;render();},
+  hhdc:()=>{hhDetId=null;render();},
+  hhdedit:b=>{const h=happyHours.find(x=>x.id===b.dataset.id);if(!h)return;hhDetId=null;hhEditId=h.id;hhF={...h};hhAddOpen=true;render();},
+  hhdel:b=>{if(!confirm('Remove this happy hour?'))return;happyHours=happyHours.filter(h=>h.id!==b.dataset.id);saveHappyHours();hhDetId=null;showToast('Removed');render();},
   hhed:b=>{const h=happyHours.find(x=>x.id===b.dataset.id);if(!h)return;hhEditId=h.id;hhF={...h};hhAddOpen=true;render();},
   hhrm:b=>{if(!confirm('Remove this happy hour?'))return;happyHours=happyHours.filter(h=>h.id!==b.dataset.id);saveHappyHours();showToast('Removed');render();},
   hhsv:()=>{
@@ -1313,12 +1358,13 @@ const A={
   hhph:b=>{
     const raw=discovered.find(e=>e.id===b.dataset.id);if(!raw)return;
     const[ts,te]=splitRange(raw.time||'');
+    const allDays=raw.isRecurring&&(!raw.recurringType||/daily|every.?day/i.test(raw.recurringType||''));
     hhAddOpen=true;hhEditId=null;
-    hhF={title:raw.title||'',location:raw.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:raw.price||'',link:raw.link||'',days:[hhDay||todayDow()]};
+    hhF={title:raw.title||'',location:raw.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:raw.price||'',link:raw.link||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};
     view='hh';render();
   },
   hhdn:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};view='hh';render();},
-  evhh:b=>{const ev=events.find(x=>x.id===b.dataset.id);if(!ev)return;const[ts,te]=splitRange(ev.time||'');hhAddOpen=true;hhEditId=null;hhF={title:ev.title||'',location:ev.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:ev.price||'',link:ev.link||'',days:[hhDay||todayDow()]};view='hh';detId=null;isEdit=false;render();},
+  evhh:b=>{const ev=events.find(x=>x.id===b.dataset.id);if(!ev)return;const[ts,te]=splitRange(ev.time||'');const allDays=ev.isRecurring&&(!ev.recurringType||/daily|every.?day/i.test(ev.recurringType||''));hhAddOpen=true;hhEditId=null;hhF={title:ev.title||'',location:ev.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:ev.price||'',link:ev.link||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};view='hh';detId=null;isEdit=false;render();},
   dno:b=>{const id=b.dataset.id,card=b.closest('.disc-card'),ev=discovered.find(e=>e.id===id);const commit=()=>{if(!isDismissed(id)){dismissed.push({id,date:ev?ev.date:''});saveDismissed();}render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   dae:b=>{const id=b.dataset.id,raw=discovered.find(e=>e.id===id);if(!raw)return;const card=b.closest('.disc-card');const commit=()=>{const ev=sanitizeEvent({...raw,status:'want'});if(!events.some(x=>x.id===ev.id)){events.push(ev);saveData();}if(!isDismissed(id)){dismissed.push({id,date:raw.date});saveDismissed();}showToast('✓ Added to your events');render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   sf:b=>{filter=b.dataset.f;render();},
