@@ -373,9 +373,9 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-offer-price{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--maroon);white-space:nowrap;flex-shrink:0}
 .hh-det-inc{margin:16px 0 4px}
 .hh-det-inc-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:6px}
-.hh-offers.det .hh-offer-row{padding:9px 0}
-.hh-offers.det .hh-offer-item{font-size:15px}
-.hh-offers.det .hh-offer-price{font-size:14px}
+.hh-offers.lg .hh-offer-row{padding:9px 0}
+.hh-offers.lg .hh-offer-item{font-size:15px}
+.hh-offers.lg .hh-offer-price{font-size:14px}
 .hh-day-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
 .hh-tag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--hair);color:var(--ink-soft)}
 .hh-tag.cur{background:var(--maroon);color:#fff}
@@ -834,7 +834,7 @@ function bHHDetail(h){
   const tags=DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).filter((_,i)=>(h.days||[]).includes(DOW_KEYS[i])).join('') ||
     DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).join('');
   const offers=bestOffers(h);
-  const includes=offers.length?`<div class="hh-det-inc"><div class="hh-det-inc-lbl">What's included</div><ul class="hh-offers det">${offersRows(offers)}</ul></div>`:'';
+  const includes=offers.length?`<div class="hh-det-inc"><div class="hh-det-inc-lbl">What's included</div><ul class="hh-offers lg">${offersRows(offers)}</ul></div>`:'';
   // Only show the raw notes row if it isn't already the itemized source
   const notesIsOffers=offerScore(parseOffers(h.notes||''))>0 && offerScore(offers)>0;
   const rows=[
