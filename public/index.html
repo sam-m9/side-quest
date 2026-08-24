@@ -603,7 +603,22 @@ function parseOffers(deal){
     return{item,price};
   });
 }
-function offersHtml(deal){const offers=parseOffers(deal);if(!offers.length)return'';return`<ul class="hh-offers">${offers.map(o=>`<li class="hh-offer-row"><span class="hh-offer-item">${esc(o.item)}</span>${o.price?`<span class="hh-offer-price">${esc(o.price)}</span>`:''}</li>`).join('')}</ul>`;}
+function offerScore(arr){return arr.filter(o=>o.price&&o.item&&!/^\$/.test(o.item)).length;}
+function bestOffers(h){
+  // Specials often live in notes (or the source caption), not the short deal string.
+  const fromDeal=parseOffers(h.deal||'');
+  const fromNotes=parseOffers(h.notes||'');
+  return offerScore(fromNotes)>offerScore(fromDeal)?fromNotes:fromDeal;
+}
+function offersRows(offers){return offers.map(o=>`<li class="hh-offer-row"><span class="hh-offer-item">${esc(o.item)}</span>${o.price?`<span class="hh-offer-price">${esc(o.price)}</span>`:''}</li>`).join('');}
+function offersHtml(h){const offers=bestOffers(h);if(!offers.length)return'';return`<ul class="hh-offers">${offersRows(offers)}</ul>`;}
+function richDeal(src){
+  // Pick whichever field yields the most itemized specials (item + price).
+  const cands=[src.price||'',src.description||'',src.notes||''];
+  let best=src.price||'',bestScore=offerScore(parseOffers(src.price||''));
+  cands.forEach(t=>{const s=offerScore(parseOffers(t));if(s>bestScore){best=t;bestScore=s;}});
+  return best;
+}
 function fmt12(t){if(!t)return'';const[h,mn]=t.split(':').map(Number);if(isNaN(h))return t;const ap=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}:${String(mn||0).padStart(2,'0')} ${ap}`;}
 function normTo24(s){if(!s)return'';const m=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);if(!m)return'';let h=+m[1],mn=+(m[2]||0);const ap=(m[3]||'').toLowerCase();if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;return`${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;}
 function syncHHForm(){if(!hhAddOpen)return;const dealEl=document.getElementById('hhf-deal');hhF={...hhF,title:document.getElementById('hhf-name')?.value??hhF.title??'',location:document.getElementById('hhf-loc')?.value??hhF.location??'',timeStart:document.getElementById('hhf-ts')?.value||hhF.timeStart||'17:00',timeEnd:document.getElementById('hhf-te')?.value||hhF.timeEnd||'19:00',deal:dealEl!=null?dealEl.value:hhF.deal??'',link:document.getElementById('hhf-link')?.value??hhF.link??''};}
@@ -807,7 +822,7 @@ function bHappyHours(){
     cards=list.map(h=>{
       const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
       const tags=DOW_KEYS.filter(d=>(h.days||[]).includes(d)).map((d,_,arr)=>{const i=DOW_KEYS.indexOf(d);return`<span class="hh-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`;}).join('');
-      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${offersHtml(h.deal)}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
+      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${offersHtml(h)}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
     }).join('');
   }else{
     cards=`<div class="hh-empty">No happy hours saved for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
@@ -818,12 +833,14 @@ function bHHDetail(h){
   const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
   const tags=DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).filter((_,i)=>(h.days||[]).includes(DOW_KEYS[i])).join('') ||
     DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).join('');
-  const offers=parseOffers(h.deal);
-  const includes=offers.length?`<div class="hh-det-inc"><div class="hh-det-inc-lbl">What's included</div><ul class="hh-offers det">${offers.map(o=>`<li class="hh-offer-row"><span class="hh-offer-item">${esc(o.item)}</span>${o.price?`<span class="hh-offer-price">${esc(o.price)}</span>`:''}</li>`).join('')}</ul></div>`:'';
+  const offers=bestOffers(h);
+  const includes=offers.length?`<div class="hh-det-inc"><div class="hh-det-inc-lbl">What's included</div><ul class="hh-offers det">${offersRows(offers)}</ul></div>`:'';
+  // Only show the raw notes row if it isn't already the itemized source
+  const notesIsOffers=offerScore(parseOffers(h.notes||''))>0 && offerScore(offers)>0;
   const rows=[
     time?`<div class="hh-det-row"><div class="hh-det-ico">🕔</div><div class="hh-det-val">${esc(time)}</div></div>`:'',
     h.location?`<div class="hh-det-row"><div class="hh-det-ico">📍</div><div class="hh-det-val">${esc(h.location)}</div></div>`:'',
-    h.notes?`<div class="hh-det-row"><div class="hh-det-ico">📝</div><div class="hh-det-val">${esc(h.notes)}</div></div>`:'',
+    (h.notes&&!notesIsOffers)?`<div class="hh-det-row"><div class="hh-det-ico">📝</div><div class="hh-det-val">${esc(h.notes)}</div></div>`:'',
     h.link?`<div class="hh-det-row"><div class="hh-det-ico">🔗</div><div class="hh-det-val"><a href="${esc(h.link)}" target="_blank" rel="noopener" style="color:var(--maroon);text-decoration:none">${esc(h.link.replace(/^https?:\/\//,''))}</a></div></div>`:'',
   ].filter(Boolean).join('');
   return`<div class="det"><div style="display:flex;align-items:center;padding:16px 22px 0;gap:12px"><button class="back-btn" data-a="hhdc" style="font-size:22px;background:none;border:none;cursor:pointer;color:var(--ink)">←</button><div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe)">Happy Hour</div></div><div class="hh-det"><div class="hh-det-title">${esc(h.title)}</div>${rows}${includes}<div class="hh-det-tags">${tags}</div><div class="hh-det-btns"><button class="hh-det-btn" data-a="hhdedit" data-id="${h.id}">Edit</button><button class="hh-det-btn danger" data-a="hhdel" data-id="${h.id}">Remove</button></div></div></div>`;
@@ -1411,7 +1428,7 @@ const A={
     const editId=hhEditId;
     const dup=hhFindByTitle(title);
     if(dup&&dup.id!==editId){hhDetId=dup.id;hhAddOpen=false;hhEditId=null;hhF={};showToast('Already in Happy Hours');render();return;}
-    const hh={id:editId||'hh_'+Date.now(),title,location:(hhF.location||'').trim(),timeStart:hhF.timeStart||'17:00',timeEnd:hhF.timeEnd||'19:00',deal:(hhF.deal||'').trim(),link:(hhF.link||'').trim(),days,addedAt:editId?(happyHours.find(x=>x.id===editId)?.addedAt||new Date().toISOString()):new Date().toISOString()};
+    const hh={id:editId||'hh_'+Date.now(),title,location:(hhF.location||'').trim(),timeStart:hhF.timeStart||'17:00',timeEnd:hhF.timeEnd||'19:00',deal:(hhF.deal||'').trim(),notes:(hhF.notes||'').trim(),link:(hhF.link||'').trim(),days,addedAt:editId?(happyHours.find(x=>x.id===editId)?.addedAt||new Date().toISOString()):new Date().toISOString()};
     if(editId){happyHours=happyHours.map(h=>h.id===editId?hh:h);showToast('Updated ✓');}
     else{happyHours.push(hh);showToast('Happy hour saved ✓');}
     saveHappyHours();hhAddOpen=false;hhEditId=null;hhF={};render();
@@ -1422,11 +1439,11 @@ const A={
     const[ts,te]=splitRange(raw.time||'');
     const allDays=raw.isRecurring&&(!raw.recurringType||/daily|every.?day/i.test(raw.recurringType||''));
     hhAddOpen=true;hhEditId=null;
-    hhF={title:raw.title||'',location:raw.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:raw.price||'',link:raw.link||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};
+    hhF={title:raw.title||'',location:raw.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:richDeal(raw),link:raw.link||'',notes:raw.notes||raw.description||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};
     view='hh';render();
   },
   hhdn:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};view='hh';render();},
-  evhh:b=>{const ev=events.find(x=>x.id===b.dataset.id);if(!ev)return;const dup=hhFindByTitle(ev.title);if(dup){hhAddOpen=false;hhEditId=null;hhF={};hhDay=(dup.days&&dup.days[0])||hhDay;hhDetId=dup.id;view='hh';detId=null;isEdit=false;showToast('Already in Happy Hours');render();return;}const[ts,te]=splitRange(ev.time||'');const allDays=ev.isRecurring&&(!ev.recurringType||/daily|every.?day/i.test(ev.recurringType||''));hhAddOpen=true;hhEditId=null;hhF={title:ev.title||'',location:ev.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:ev.price||'',link:ev.link||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};view='hh';detId=null;isEdit=false;render();},
+  evhh:b=>{const ev=events.find(x=>x.id===b.dataset.id);if(!ev)return;const dup=hhFindByTitle(ev.title);if(dup){hhAddOpen=false;hhEditId=null;hhF={};hhDay=(dup.days&&dup.days[0])||hhDay;hhDetId=dup.id;view='hh';detId=null;isEdit=false;showToast('Already in Happy Hours');render();return;}const[ts,te]=splitRange(ev.time||'');const allDays=ev.isRecurring&&(!ev.recurringType||/daily|every.?day/i.test(ev.recurringType||''));hhAddOpen=true;hhEditId=null;hhF={title:ev.title||'',location:ev.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:richDeal(ev),link:ev.link||'',notes:ev.notes||ev.description||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};view='hh';detId=null;isEdit=false;render();},
   dno:b=>{const id=b.dataset.id,card=b.closest('.disc-card'),ev=discovered.find(e=>e.id===id);const commit=()=>{if(!isDismissed(id)){dismissed.push({id,date:ev?ev.date:''});saveDismissed();}render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   dae:b=>{const id=b.dataset.id,raw=discovered.find(e=>e.id===id);if(!raw)return;const ev=sanitizeEvent({...raw,status:'want'});if(events.some(x=>x.id===ev.id)){showToast('Already in your events');return;}const card=b.closest('.disc-card');const commit=()=>{events.push(ev);saveData();if(!isDismissed(id)){dismissed.push({id,date:raw.date});saveDismissed();}showToast('✓ Added to your events');render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   sf:b=>{filter=b.dataset.f;render();},
