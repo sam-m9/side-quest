@@ -573,7 +573,36 @@ function todayDow(){return DOW_KEYS[new Date().getDay()];}
 function dsDow(ds){try{const[y,m,d]=ds.split('-').map(Number);return DOW_KEYS[new Date(y,m-1,d).getDay()];}catch{return '';}}
 function hhForDow(dow){return happyHours.filter(h=>h.days&&h.days.includes(dow));}
 function hhFindByTitle(title){const t=(title||'').trim().toLowerCase();if(!t)return null;return happyHours.find(h=>(h.title||'').trim().toLowerCase()===t)||null;}
-function parseOffers(deal){if(!deal)return[];return deal.split(/[\n;]+/).map(l=>l.trim()).filter(Boolean).map(line=>{const m=line.match(/(\$\s?\d+(?:\.\d+)?(?:\s?-\s?\$?\d+(?:\.\d+)?)?|free|half[\s-]?off|\d+%\s?off|bogo)/i);let price='',item=line;if(m){price=m[0].replace(/\s+/g,'').replace(/^free$/i,'Free');item=line.replace(m[0],'').replace(/^[\s:–—-]+|[\s:–—-]+$/g,'').trim();}if(!item){item=price;price='';}return{item,price};});}
+const PRICE_ONE=/\$\s?\d+(?:\.\d+)?(?:\s?-\s?\$?\d+(?:\.\d+)?)?|\bfree\b|half[\s-]?off|\d+%\s?off|\bbogo\b/i;
+const PRICE_RE=new RegExp(PRICE_ONE.source,'ig');
+function parseOffers(deal){
+  if(!deal)return[];
+  // Normalize bullets/pipes/semicolons to newlines
+  let text=deal.replace(/\s*[•·|]\s*/g,'\n').replace(/;/g,'\n');
+  let lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const expanded=[];
+  lines.forEach(line=>{
+    const hits=line.match(PRICE_RE);
+    if(hits&&hits.length>1){
+      // Prefer comma-splitting when each piece carries its own price (handles price-last)
+      let parts=null;
+      if(line.includes(',')){
+        const c=line.split(',').map(s=>s.trim()).filter(Boolean);
+        if(c.filter(p=>PRICE_ONE.test(p)).length>=c.length-1)parts=c;
+      }
+      // Fall back: split before each price token (price-first single-line)
+      if(!parts)parts=line.split(/(?=\$\s?\d|\bfree\b|\bbogo\b)/i).map(s=>s.replace(/^[\s,]+|[\s,]+$/g,'')).filter(Boolean);
+      parts.forEach(p=>expanded.push(p));
+    }else{expanded.push(line);}
+  });
+  return expanded.map(line=>{
+    const m=line.match(PRICE_ONE);
+    let price='',item=line;
+    if(m){price=m[0].replace(/\s+/g,'').replace(/^free$/i,'Free');item=line.replace(m[0],'').replace(/^[\s:,–—-]+|[\s:,–—-]+$/g,'').trim();}
+    if(!item){item=price;price='';}
+    return{item,price};
+  });
+}
 function offersHtml(deal){const offers=parseOffers(deal);if(!offers.length)return'';return`<ul class="hh-offers">${offers.map(o=>`<li class="hh-offer-row"><span class="hh-offer-item">${esc(o.item)}</span>${o.price?`<span class="hh-offer-price">${esc(o.price)}</span>`:''}</li>`).join('')}</ul>`;}
 function fmt12(t){if(!t)return'';const[h,mn]=t.split(':').map(Number);if(isNaN(h))return t;const ap=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}:${String(mn||0).padStart(2,'0')} ${ap}`;}
 function normTo24(s){if(!s)return'';const m=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);if(!m)return'';let h=+m[1],mn=+(m[2]||0);const ap=(m[3]||'').toLowerCase();if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;return`${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;}
