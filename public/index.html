@@ -366,6 +366,16 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-name{font-family:var(--disp);font-size:17px;font-weight:600;color:var(--ink);line-height:1.2;margin-bottom:4px}
 .hh-meta{font-family:var(--mono);font-size:11px;color:var(--taupe);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
 .hh-deal{font-family:var(--mono);font-size:12px;color:var(--maroon);margin-bottom:8px}
+.hh-offers{list-style:none;margin:2px 0 10px;padding:0}
+.hh-offer-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--hair)}
+.hh-offer-row:last-child{border-bottom:none}
+.hh-offer-item{font-family:var(--body,Georgia,serif);font-size:13px;color:var(--ink-soft);line-height:1.35;text-transform:capitalize}
+.hh-offer-price{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--maroon);white-space:nowrap;flex-shrink:0}
+.hh-det-inc{margin:16px 0 4px}
+.hh-det-inc-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:6px}
+.hh-offers.det .hh-offer-row{padding:9px 0}
+.hh-offers.det .hh-offer-item{font-size:15px}
+.hh-offers.det .hh-offer-price{font-size:14px}
 .hh-day-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
 .hh-tag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--hair);color:var(--ink-soft)}
 .hh-tag.cur{background:var(--maroon);color:#fff}
@@ -563,6 +573,8 @@ function todayDow(){return DOW_KEYS[new Date().getDay()];}
 function dsDow(ds){try{const[y,m,d]=ds.split('-').map(Number);return DOW_KEYS[new Date(y,m-1,d).getDay()];}catch{return '';}}
 function hhForDow(dow){return happyHours.filter(h=>h.days&&h.days.includes(dow));}
 function hhFindByTitle(title){const t=(title||'').trim().toLowerCase();if(!t)return null;return happyHours.find(h=>(h.title||'').trim().toLowerCase()===t)||null;}
+function parseOffers(deal){if(!deal)return[];return deal.split(/[\n;]+/).map(l=>l.trim()).filter(Boolean).map(line=>{const m=line.match(/(\$\s?\d+(?:\.\d+)?(?:\s?-\s?\$?\d+(?:\.\d+)?)?|free|half[\s-]?off|\d+%\s?off|bogo)/i);let price='',item=line;if(m){price=m[0].replace(/\s+/g,'').replace(/^free$/i,'Free');item=line.replace(m[0],'').replace(/^[\s:–—-]+|[\s:–—-]+$/g,'').trim();}if(!item){item=price;price='';}return{item,price};});}
+function offersHtml(deal){const offers=parseOffers(deal);if(!offers.length)return'';return`<ul class="hh-offers">${offers.map(o=>`<li class="hh-offer-row"><span class="hh-offer-item">${esc(o.item)}</span>${o.price?`<span class="hh-offer-price">${esc(o.price)}</span>`:''}</li>`).join('')}</ul>`;}
 function fmt12(t){if(!t)return'';const[h,mn]=t.split(':').map(Number);if(isNaN(h))return t;const ap=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}:${String(mn||0).padStart(2,'0')} ${ap}`;}
 function normTo24(s){if(!s)return'';const m=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);if(!m)return'';let h=+m[1],mn=+(m[2]||0);const ap=(m[3]||'').toLowerCase();if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;return`${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;}
 function syncHHForm(){if(!hhAddOpen)return;const dealEl=document.getElementById('hhf-deal');hhF={...hhF,title:document.getElementById('hhf-name')?.value??hhF.title??'',location:document.getElementById('hhf-loc')?.value??hhF.location??'',timeStart:document.getElementById('hhf-ts')?.value||hhF.timeStart||'17:00',timeEnd:document.getElementById('hhf-te')?.value||hhF.timeEnd||'19:00',deal:dealEl!=null?dealEl.value:hhF.deal??'',link:document.getElementById('hhf-link')?.value??hhF.link??''};}
@@ -766,8 +778,7 @@ function bHappyHours(){
     cards=list.map(h=>{
       const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
       const tags=DOW_KEYS.filter(d=>(h.days||[]).includes(d)).map((d,_,arr)=>{const i=DOW_KEYS.indexOf(d);return`<span class="hh-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`;}).join('');
-      const dealLines=h.deal?(h.deal.split('\n').map(l=>l.trim()).filter(Boolean)):[];
-      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${dealLines.length?`<div class="hh-deal">${dealLines.map(l=>`<div>${esc(l)}</div>`).join('')}</div>`:''}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
+      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${offersHtml(h.deal)}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
     }).join('');
   }else{
     cards=`<div class="hh-empty">No happy hours saved for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
@@ -778,14 +789,15 @@ function bHHDetail(h){
   const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
   const tags=DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).filter((_,i)=>(h.days||[]).includes(DOW_KEYS[i])).join('') ||
     DOW_KEYS.map((d,i)=>`<span class="hh-det-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`).join('');
+  const offers=parseOffers(h.deal);
+  const includes=offers.length?`<div class="hh-det-inc"><div class="hh-det-inc-lbl">What's included</div><ul class="hh-offers det">${offers.map(o=>`<li class="hh-offer-row"><span class="hh-offer-item">${esc(o.item)}</span>${o.price?`<span class="hh-offer-price">${esc(o.price)}</span>`:''}</li>`).join('')}</ul></div>`:'';
   const rows=[
     time?`<div class="hh-det-row"><div class="hh-det-ico">🕔</div><div class="hh-det-val">${esc(time)}</div></div>`:'',
     h.location?`<div class="hh-det-row"><div class="hh-det-ico">📍</div><div class="hh-det-val">${esc(h.location)}</div></div>`:'',
-    h.deal?`<div class="hh-det-row"><div class="hh-det-ico">🍺</div><div class="hh-det-val hh-det-deal">${h.deal.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>esc(l)).join('<br>')}</div></div>`:'',
     h.notes?`<div class="hh-det-row"><div class="hh-det-ico">📝</div><div class="hh-det-val">${esc(h.notes)}</div></div>`:'',
     h.link?`<div class="hh-det-row"><div class="hh-det-ico">🔗</div><div class="hh-det-val"><a href="${esc(h.link)}" target="_blank" rel="noopener" style="color:var(--maroon);text-decoration:none">${esc(h.link.replace(/^https?:\/\//,''))}</a></div></div>`:'',
   ].filter(Boolean).join('');
-  return`<div class="det"><div style="display:flex;align-items:center;padding:16px 22px 0;gap:12px"><button class="back-btn" data-a="hhdc" style="font-size:22px;background:none;border:none;cursor:pointer;color:var(--ink)">←</button><div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe)">Happy Hour</div></div><div class="hh-det"><div class="hh-det-title">${esc(h.title)}</div>${rows}<div class="hh-det-tags">${tags}</div><div class="hh-det-btns"><button class="hh-det-btn" data-a="hhdedit" data-id="${h.id}">Edit</button><button class="hh-det-btn danger" data-a="hhdel" data-id="${h.id}">Remove</button></div></div></div>`;
+  return`<div class="det"><div style="display:flex;align-items:center;padding:16px 22px 0;gap:12px"><button class="back-btn" data-a="hhdc" style="font-size:22px;background:none;border:none;cursor:pointer;color:var(--ink)">←</button><div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe)">Happy Hour</div></div><div class="hh-det"><div class="hh-det-title">${esc(h.title)}</div>${rows}${includes}<div class="hh-det-tags">${tags}</div><div class="hh-det-btns"><button class="hh-det-btn" data-a="hhdedit" data-id="${h.id}">Edit</button><button class="hh-det-btn danger" data-a="hhdel" data-id="${h.id}">Remove</button></div></div></div>`;
 }
 
 // ---- Google Drive sync (additive; app works fully without it) ----
