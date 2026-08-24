@@ -562,6 +562,7 @@ function saveHappyHours(){try{localStorage.setItem(HH_KEY,JSON.stringify(happyHo
 function todayDow(){return DOW_KEYS[new Date().getDay()];}
 function dsDow(ds){try{const[y,m,d]=ds.split('-').map(Number);return DOW_KEYS[new Date(y,m-1,d).getDay()];}catch{return '';}}
 function hhForDow(dow){return happyHours.filter(h=>h.days&&h.days.includes(dow));}
+function hhFindByTitle(title){const t=(title||'').trim().toLowerCase();if(!t)return null;return happyHours.find(h=>(h.title||'').trim().toLowerCase()===t)||null;}
 function fmt12(t){if(!t)return'';const[h,mn]=t.split(':').map(Number);if(isNaN(h))return t;const ap=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}:${String(mn||0).padStart(2,'0')} ${ap}`;}
 function normTo24(s){if(!s)return'';const m=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);if(!m)return'';let h=+m[1],mn=+(m[2]||0);const ap=(m[3]||'').toLowerCase();if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;return`${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;}
 function syncHHForm(){if(!hhAddOpen)return;const dealEl=document.getElementById('hhf-deal');hhF={...hhF,title:document.getElementById('hhf-name')?.value??hhF.title??'',location:document.getElementById('hhf-loc')?.value??hhF.location??'',timeStart:document.getElementById('hhf-ts')?.value||hhF.timeStart||'17:00',timeEnd:document.getElementById('hhf-te')?.value||hhF.timeEnd||'19:00',deal:dealEl!=null?dealEl.value:hhF.deal??'',link:document.getElementById('hhf-link')?.value??hhF.link??''};}
@@ -1367,6 +1368,8 @@ const A={
     const days=hhF.days||[];
     if(!days.length){showToast('Pick at least one day');return;}
     const editId=hhEditId;
+    const dup=hhFindByTitle(title);
+    if(dup&&dup.id!==editId){hhDetId=dup.id;hhAddOpen=false;hhEditId=null;hhF={};showToast('Already in Happy Hours');render();return;}
     const hh={id:editId||'hh_'+Date.now(),title,location:(hhF.location||'').trim(),timeStart:hhF.timeStart||'17:00',timeEnd:hhF.timeEnd||'19:00',deal:(hhF.deal||'').trim(),link:(hhF.link||'').trim(),days,addedAt:editId?(happyHours.find(x=>x.id===editId)?.addedAt||new Date().toISOString()):new Date().toISOString()};
     if(editId){happyHours=happyHours.map(h=>h.id===editId?hh:h);showToast('Updated ✓');}
     else{happyHours.push(hh);showToast('Happy hour saved ✓');}
@@ -1374,6 +1377,7 @@ const A={
   },
   hhph:b=>{
     const raw=discovered.find(e=>e.id===b.dataset.id);if(!raw)return;
+    const dup=hhFindByTitle(raw.title);if(dup){hhAddOpen=false;hhEditId=null;hhF={};hhDay=(dup.days&&dup.days[0])||hhDay;hhDetId=dup.id;view='hh';showToast('Already in Happy Hours');render();return;}
     const[ts,te]=splitRange(raw.time||'');
     const allDays=raw.isRecurring&&(!raw.recurringType||/daily|every.?day/i.test(raw.recurringType||''));
     hhAddOpen=true;hhEditId=null;
@@ -1381,7 +1385,7 @@ const A={
     view='hh';render();
   },
   hhdn:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};view='hh';render();},
-  evhh:b=>{const ev=events.find(x=>x.id===b.dataset.id);if(!ev)return;const[ts,te]=splitRange(ev.time||'');const allDays=ev.isRecurring&&(!ev.recurringType||/daily|every.?day/i.test(ev.recurringType||''));hhAddOpen=true;hhEditId=null;hhF={title:ev.title||'',location:ev.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:ev.price||'',link:ev.link||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};view='hh';detId=null;isEdit=false;render();},
+  evhh:b=>{const ev=events.find(x=>x.id===b.dataset.id);if(!ev)return;const dup=hhFindByTitle(ev.title);if(dup){hhAddOpen=false;hhEditId=null;hhF={};hhDay=(dup.days&&dup.days[0])||hhDay;hhDetId=dup.id;view='hh';detId=null;isEdit=false;showToast('Already in Happy Hours');render();return;}const[ts,te]=splitRange(ev.time||'');const allDays=ev.isRecurring&&(!ev.recurringType||/daily|every.?day/i.test(ev.recurringType||''));hhAddOpen=true;hhEditId=null;hhF={title:ev.title||'',location:ev.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:ev.price||'',link:ev.link||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};view='hh';detId=null;isEdit=false;render();},
   dno:b=>{const id=b.dataset.id,card=b.closest('.disc-card'),ev=discovered.find(e=>e.id===id);const commit=()=>{if(!isDismissed(id)){dismissed.push({id,date:ev?ev.date:''});saveDismissed();}render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   dae:b=>{const id=b.dataset.id,raw=discovered.find(e=>e.id===id);if(!raw)return;const ev=sanitizeEvent({...raw,status:'want'});if(events.some(x=>x.id===ev.id)){showToast('Already in your events');return;}const card=b.closest('.disc-card');const commit=()=>{events.push(ev);saveData();if(!isDismissed(id)){dismissed.push({id,date:raw.date});saveDismissed();}showToast('✓ Added to your events');render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   sf:b=>{filter=b.dataset.f;render();},
