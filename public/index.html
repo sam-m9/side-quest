@@ -387,6 +387,12 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-det-btns{display:flex;gap:10px;margin-top:20px}
 .hh-det-btn{flex:1;padding:13px;border-radius:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--hair);background:transparent;color:var(--ink-soft)}
 .hh-det-btn.danger{color:var(--maroon);border-color:var(--maroon)}
+.hh-also{background:var(--panel);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+.hh-also-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:6px}
+.hh-also-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--hair)}
+.hh-also-row:last-child{border-bottom:none}
+.hh-also-name{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%}
+.hh-also-time{font-family:var(--mono);font-size:10px;color:var(--maroon);white-space:nowrap}
 .hh-add-wrap{padding:0 22px 4px}
 .hh-add-btn{width:100%;padding:13px;border:1.5px dashed var(--hair2);border-radius:12px;background:transparent;color:var(--taupe);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .hh-form{border:1px solid var(--hair);border-radius:14px;background:var(--paper-alt);padding:16px;margin:8px 22px 4px}
@@ -558,7 +564,7 @@ function dsDow(ds){try{const[y,m,d]=ds.split('-').map(Number);return DOW_KEYS[ne
 function hhForDow(dow){return happyHours.filter(h=>h.days&&h.days.includes(dow));}
 function fmt12(t){if(!t)return'';const[h,mn]=t.split(':').map(Number);if(isNaN(h))return t;const ap=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}:${String(mn||0).padStart(2,'0')} ${ap}`;}
 function normTo24(s){if(!s)return'';const m=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);if(!m)return'';let h=+m[1],mn=+(m[2]||0);const ap=(m[3]||'').toLowerCase();if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;return`${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;}
-function syncHHForm(){if(!hhAddOpen)return;hhF={...hhF,title:document.getElementById('hhf-name')?.value??hhF.title??'',location:document.getElementById('hhf-loc')?.value??hhF.location??'',timeStart:document.getElementById('hhf-ts')?.value||hhF.timeStart||'17:00',timeEnd:document.getElementById('hhf-te')?.value||hhF.timeEnd||'19:00',deal:document.getElementById('hhf-deal')?.value??hhF.deal??'',link:document.getElementById('hhf-link')?.value??hhF.link??''};}
+function syncHHForm(){if(!hhAddOpen)return;const dealEl=document.getElementById('hhf-deal');hhF={...hhF,title:document.getElementById('hhf-name')?.value??hhF.title??'',location:document.getElementById('hhf-loc')?.value??hhF.location??'',timeStart:document.getElementById('hhf-ts')?.value||hhF.timeStart||'17:00',timeEnd:document.getElementById('hhf-te')?.value||hhF.timeEnd||'19:00',deal:dealEl!=null?dealEl.value:hhF.deal??'',link:document.getElementById('hhf-link')?.value??hhF.link??''};}
 function maskKey(k){if(!k)return'';const tail=k.slice(-4);return(k.length>11?k.slice(0,7):'sk-')+'••••••'+tail;}
 
 // TOAST
@@ -700,8 +706,16 @@ async function syncDiscovered(){
       const lc=(e.title+' '+(e.description||'')).toLowerCase();
       const autoId='ig-hh-'+e.id;
       if((e.happyHour||lc.includes('happy hour'))&&!hhIds.has(autoId)){
-        const[ts,te]=splitRange(e.time||'');
-        happyHours.push({id:autoId,title:e.title,location:e.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:e.price||'',link:e.link||'',notes:e.notes||'',days:[...DOW_KEYS],addedAt:new Date().toISOString()});
+        // Use stored time/endTime directly (Gemini already extracted them)
+        const ts=normTo24(e.time||'')||'17:00';
+        const te=normTo24(e.endTime||'')||'19:00';
+        // Map recurringType CSV back to DOW keys array, or default all days
+        let days=[...DOW_KEYS];
+        if(e.recurringType&&e.recurringType!=='null'){
+          const mapped=e.recurringType.split(',').map(s=>s.trim()).filter(s=>DOW_KEYS.includes(s));
+          if(mapped.length)days=mapped;
+        }
+        happyHours.push({id:autoId,title:e.title,location:e.location||'',timeStart:ts,timeEnd:te,deal:e.price||'',link:e.link||'',notes:e.notes||'',days,addedAt:new Date().toISOString()});
         hhIds.add(autoId);hhChanged=true;
       }
     });
@@ -739,7 +753,9 @@ function bHappyHours(){
   if(hhAddOpen){
     const f=hhF;
     const dayChecks=DOW_KEYS.map((d,i)=>`<button class="hh-dow-cb${(f.days||[]).includes(d)?' on':''}" data-a="hhtd" data-d="${d}">${DOW_ABB[i]}</button>`).join('');
-    formHtml=`<div class="hh-form"><div class="hh-form-ttl">${hhEditId?'Edit Happy Hour':'New Happy Hour'}</div><div class="hh-form-row"><div class="hh-label">Name</div><input class="fi" id="hhf-name" type="text" placeholder="Bar or restaurant name" value="${esc(f.title||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Location</div><input class="fi" id="hhf-loc" type="text" placeholder="Address or neighborhood" value="${esc(f.location||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Hours</div><div class="hh-time-row"><div class="hh-time-field"><div class="hh-time-lbl">Start</div><input class="fi" id="hhf-ts" type="time" value="${esc(f.timeStart||'17:00')}"></div><div class="hh-time-field"><div class="hh-time-lbl">End</div><input class="fi" id="hhf-te" type="time" value="${esc(f.timeEnd||'19:00')}"></div></div></div><div class="hh-form-row"><div class="hh-label">Days it recurs</div><div class="hh-dow-row">${dayChecks}</div></div><div class="hh-form-row"><div class="hh-label">Deal</div><input class="fi" id="hhf-deal" type="text" placeholder="$4 drafts, half-off wine…" value="${esc(f.deal||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Link (optional)</div><input class="fi" id="hhf-link" type="url" placeholder="https://…" value="${esc(f.link||'')}" autocomplete="off"></div><div class="ak-btns"><button class="btn-p" data-a="hhsv">Save</button><button class="btn-s" data-a="hhcx" style="width:auto;white-space:nowrap">Cancel</button></div></div>`;
+    const existingForDay=hhForDow(hhDay).filter(h=>h.id!==hhEditId);
+    const alsoOn=existingForDay.length?`<div class="hh-also"><div class="hh-also-lbl">Also on ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]}</div>${existingForDay.map(h=>{const t=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join('–');return`<div class="hh-also-row"><span class="hh-also-name">${esc(h.title)}</span>${t?`<span class="hh-also-time">${esc(t)}</span>`:''}</div>`;}).join('')}</div>`:'';
+    formHtml=`<div class="hh-form">${alsoOn}<div class="hh-form-ttl">${hhEditId?'Edit Happy Hour':'New Happy Hour'}</div><div class="hh-form-row"><div class="hh-label">Name</div><input class="fi" id="hhf-name" type="text" placeholder="Bar or restaurant name" value="${esc(f.title||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Location</div><input class="fi" id="hhf-loc" type="text" placeholder="Address or neighborhood" value="${esc(f.location||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Hours</div><div class="hh-time-row"><div class="hh-time-field"><div class="hh-time-lbl">Start</div><input class="fi" id="hhf-ts" type="time" value="${esc(f.timeStart||'17:00')}"></div><div class="hh-time-field"><div class="hh-time-lbl">End</div><input class="fi" id="hhf-te" type="time" value="${esc(f.timeEnd||'19:00')}"></div></div></div><div class="hh-form-row"><div class="hh-label">Days it recurs</div><div class="hh-dow-row">${dayChecks}</div></div><div class="hh-form-row"><div class="hh-label">Deal / specials</div><textarea class="fi" id="hhf-deal" rows="3" placeholder="$7 martinis&#10;$5 apps/snacks&#10;$10 burger" style="resize:vertical;min-height:64px">${esc(f.deal||'')}</textarea></div><div class="hh-form-row"><div class="hh-label">Link (optional)</div><input class="fi" id="hhf-link" type="url" placeholder="https://…" value="${esc(f.link||'')}" autocomplete="off"></div><div class="ak-btns"><button class="btn-p" data-a="hhsv">Save</button><button class="btn-s" data-a="hhcx" style="width:auto;white-space:nowrap">Cancel</button></div></div>`;
   }
   const addBtn=hhAddOpen?'':
     `<div class="hh-add-wrap"><button class="hh-add-btn" data-a="hhop">+ Add Happy Hour</button></div>`;
@@ -749,7 +765,8 @@ function bHappyHours(){
     cards=list.map(h=>{
       const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
       const tags=DOW_KEYS.filter(d=>(h.days||[]).includes(d)).map((d,_,arr)=>{const i=DOW_KEYS.indexOf(d);return`<span class="hh-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`;}).join('');
-      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${h.deal?`<div class="hh-deal">${esc(h.deal)}</div>`:''}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
+      const dealLines=h.deal?(h.deal.split('\n').map(l=>l.trim()).filter(Boolean)):[];
+      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${dealLines.length?`<div class="hh-deal">${dealLines.map(l=>`<div>${esc(l)}</div>`).join('')}</div>`:''}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
     }).join('');
   }else{
     cards=`<div class="hh-empty">No happy hours saved for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
@@ -763,7 +780,7 @@ function bHHDetail(h){
   const rows=[
     time?`<div class="hh-det-row"><div class="hh-det-ico">🕔</div><div class="hh-det-val">${esc(time)}</div></div>`:'',
     h.location?`<div class="hh-det-row"><div class="hh-det-ico">📍</div><div class="hh-det-val">${esc(h.location)}</div></div>`:'',
-    h.deal?`<div class="hh-det-row"><div class="hh-det-ico">🍺</div><div class="hh-det-val hh-det-deal">${esc(h.deal)}</div></div>`:'',
+    h.deal?`<div class="hh-det-row"><div class="hh-det-ico">🍺</div><div class="hh-det-val hh-det-deal">${h.deal.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>esc(l)).join('<br>')}</div></div>`:'',
     h.notes?`<div class="hh-det-row"><div class="hh-det-ico">📝</div><div class="hh-det-val">${esc(h.notes)}</div></div>`:'',
     h.link?`<div class="hh-det-row"><div class="hh-det-ico">🔗</div><div class="hh-det-val"><a href="${esc(h.link)}" target="_blank" rel="noopener" style="color:var(--maroon);text-decoration:none">${esc(h.link.replace(/^https?:\/\//,''))}</a></div></div>`:'',
   ].filter(Boolean).join('');

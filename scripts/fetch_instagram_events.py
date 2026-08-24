@@ -125,38 +125,75 @@ GEMINI_SCHEMA = {
         "is_event": {
             "type": "BOOLEAN",
             "description": (
-                "True ONLY if this post announces a specific upcoming event "
-                "(concert, class, market, pop-up, festival, etc.) with a date. "
-                "Lifestyle photos, general promos, or undated content → false."
+                "True if this post announces a specific upcoming event "
+                "(concert, class, market, pop-up, festival, etc.) with a date, "
+                "OR a recurring happy hour / weekly special. "
+                "Lifestyle photos or completely undated/unscheduled content → false."
+            ),
+        },
+        "is_happy_hour": {
+            "type": "BOOLEAN",
+            "description": (
+                "True if the post is primarily about a happy hour, daily special, "
+                "or recurring drink/food deal (e.g. mentions 'happy hour', 'HH', "
+                "'daily special', 'every day', 'EVERYDAY', or lists drink/food prices "
+                "with a recurring time window). False for one-time events."
             ),
         },
         "title": {
             "type": "STRING",
-            "description": "Short event name, e.g. 'Jazz Night at Rainey St Bar'",
+            "description": (
+                "Short name. For happy hours use the venue name, e.g. 'Martini'. "
+                "For events use the event name, e.g. 'Jazz Night at Rainey St Bar'."
+            ),
         },
         "date": {
             "type": "STRING",
             "description": (
                 f"Full calendar date as YYYY-MM-DD. Today is {_TODAY_ISO}. "
                 "Infer the year if the post says 'this Friday' or 'Aug 23'. "
-                "Empty string if no date found."
+                "For recurring happy hours with no specific date, use today's date. "
+                "Empty string only if truly no date or recurrence is mentioned."
             ),
         },
         "time": {
             "type": "STRING",
-            "description": "Start time as '7:00 PM'. Empty string if unknown.",
+            "description": (
+                "Start time as '7:00 PM'. For 'from open' or 'opening time' use empty string. "
+                "Empty string if unknown."
+            ),
         },
         "endTime": {
             "type": "STRING",
             "description": "End time as '10:00 PM'. Empty string if unknown.",
         },
+        "recurring_days": {
+            "type": "STRING",
+            "description": (
+                "Which days this recurs. Use 'everyday' if the post says EVERYDAY, "
+                "'every day', or 7 days a week. Use 'weekdays' for Mon–Fri. "
+                "Otherwise list abbreviated days comma-separated: 'Mon,Tue,Wed,Thu,Fri'. "
+                "Empty string for one-time events."
+            ),
+        },
         "location": {
             "type": "STRING",
             "description": "Venue name and/or address. Empty string if unknown.",
         },
+        "deal": {
+            "type": "STRING",
+            "description": (
+                "ALL drink and food specials listed, one per line. "
+                "Example: '$7 martinis\\n$5 apps/snacks\\n$10 burger'. "
+                "For non-happy-hour events use the price field instead; leave this empty."
+            ),
+        },
         "price": {
             "type": "STRING",
-            "description": "'Free', '$15', '$10-$20', etc. Empty string if unknown.",
+            "description": (
+                "'Free', '$15', '$10-$20', etc. for ticketed one-time events. "
+                "Empty string for happy hours (use deal field instead) or if unknown."
+            ),
         },
         "description": {
             "type": "STRING",
@@ -174,6 +211,8 @@ GEMINI_SCHEMA = {
 _SYSTEM_PROMPT = (
     "You are an event detection assistant for Side Quest, an Austin TX events app. "
     "Analyze the Instagram post below and extract structured event data. "
+    "Pay special attention to happy hours: capture ALL deal lines (one per line in the deal field), "
+    "the exact end time (e.g. '7:00 PM' from 'open-7pm'), and recurrence ('everyday' if EVERYDAY). "
     "Return JSON only — no markdown, no explanation.\n\n"
     f"Today's date is {_TODAY_ISO} (Austin, TX local time)."
 )
@@ -265,6 +304,39 @@ def _normalize_price(raw: str) -> str:
     return text
 
 
+_DOW_MAP = {
+    "mon": "mon", "monday": "mon",
+    "tue": "tue", "tuesday": "tue",
+    "wed": "wed", "wednesday": "wed",
+    "thu": "thu", "thursday": "thu",
+    "fri": "fri", "friday": "fri",
+    "sat": "sat", "saturday": "sat",
+    "sun": "sun", "sunday": "sun",
+}
+_ALL_DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+_WEEKDAYS  = ["mon", "tue", "wed", "thu", "fri"]
+
+
+def _parse_recurring_days(raw: str) -> list[str]:
+    """Convert Gemini's recurring_days string to a list of DOW keys."""
+    if not raw:
+        return []
+    low = raw.strip().lower()
+    if low in ("everyday", "every day", "daily", "7 days", "all week"):
+        return _ALL_DAYS
+    if low in ("weekdays", "mon-fri", "monday-friday"):
+        return _WEEKDAYS
+    if low in ("weekends", "sat-sun", "saturday-sunday"):
+        return ["sat", "sun"]
+    # comma/slash-separated list
+    days = []
+    for token in low.replace("/", ",").split(","):
+        key = _DOW_MAP.get(token.strip()[:3])
+        if key:
+            days.append(key)
+    return days or []
+
+
 def make_ig_event(post: dict, extracted: dict) -> dict | None:
     """Assemble one event in the app's exact internal schema, or None if unusable."""
     title    = (extracted.get("title") or "").strip()
@@ -273,13 +345,16 @@ def make_ig_event(post: dict, extracted: dict) -> dict | None:
     if not title or not date_str:
         return None
 
-    # Drop events whose date has already passed
-    try:
-        event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        if event_date < datetime.now(timezone.utc).date():
+    # Drop events whose date has already passed (skip this check for happy hours
+    # since they recur and their date is just "today as anchor")
+    is_hh = bool(extracted.get("is_happy_hour"))
+    if not is_hh:
+        try:
+            event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            if event_date < datetime.now(timezone.utc).date():
+                return None
+        except ValueError:
             return None
-    except ValueError:
-        return None
 
     short_code = post.get("shortCode") or post.get("id") or date_str
     post_url   = post.get("url") or f"https://www.instagram.com/p/{short_code}/"
@@ -289,6 +364,14 @@ def make_ig_event(post: dict, extracted: dict) -> dict | None:
     if category not in VALID_CATEGORIES:
         category = "other"
 
+    recurring_days = _parse_recurring_days(extracted.get("recurring_days") or "")
+    is_recurring   = bool(recurring_days)
+
+    # For happy hours, merge deal lines into the price field so the app
+    # auto-promotion logic picks them up via e.price → deal in hhF
+    deal  = (extracted.get("deal") or "").strip()
+    price = _normalize_price(extracted.get("price") or "") if not deal else deal
+
     return {
         "id":           f"ig-{short_code}",
         "title":        title,
@@ -296,14 +379,15 @@ def make_ig_event(post: dict, extracted: dict) -> dict | None:
         "time":         (extracted.get("time")        or "").strip(),
         "endTime":      (extracted.get("endTime")     or "").strip(),
         "location":     (extracted.get("location")    or "").strip(),
-        "price":        _normalize_price(extracted.get("price") or ""),
+        "price":        price,
         "description":  (extracted.get("description") or "").strip()[:600],
         "category":     category,
         "link":         post_url,
         "notes":        f"Discovered via @{owner} on Instagram",
         "status":       "want",
-        "isRecurring":  False,
-        "recurringType": None,
+        "isRecurring":  is_recurring,
+        "recurringType": ",".join(recurring_days) if recurring_days else None,
+        "happyHour":    is_hh,
         "thumbnail":    post.get("displayUrl") or "",
         "addedAt":      _now_ms(),
     }
