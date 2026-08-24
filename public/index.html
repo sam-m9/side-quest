@@ -16,7 +16,7 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 <style>
 :root{
 --paper:#F6F1E7;--paper-alt:#EFE9DC;--panel:#ffffff;--white:#ffffff;
@@ -177,12 +177,12 @@ html,body{background:var(--paper);height:100%;font-family:var(--body);color:var(
 .nb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nb.on{color:var(--ink);opacity:1}
 .nb.on svg{stroke:var(--ink)}
-.nb-ul{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:15px;height:3px;border-radius:2px;background:var(--accent);opacity:0}
+.nb-ul{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:15px;height:3px;border-radius:2px;background:#F5A524;opacity:0}
 .nb.on .nb-ul{opacity:1}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(74px + env(safe-area-inset-bottom,0px));right:22px;left:auto;width:56px;height:56px;border-radius:50%;background:var(--accent);border:2.5px solid var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:101;box-shadow:4px 5px 0 var(--ink)}
-.fab svg{width:24px;height:24px;stroke:var(--white);stroke-width:2.6;fill:none;stroke-linecap:round}
+.fab{position:fixed;bottom:calc(74px + env(safe-area-inset-bottom,0px));right:22px;left:auto;width:52px;height:52px;border-radius:50%;background:#17140F;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:101;box-shadow:4px 5px 0 #a39b88}
+.fab svg{width:24px;height:24px;stroke:#F6F1E7;stroke-width:2.6;fill:none;stroke-linecap:round}
 
 /* OVERLAYS */
 .ovl-bg{position:fixed;inset:0;background:rgba(28,26,21,.55);z-index:200;-webkit-transform:translateZ(0);transform:translateZ(0);animation:fadein .2s ease}
@@ -363,76 +363,98 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .nb{position:relative}
 .nb-badge{position:absolute;top:0;right:calc(50% - 22px);background:var(--maroon);color:#fff;font-size:9px;min-width:15px;height:15px;line-height:15px;border-radius:8px;font-family:var(--mono);padding:0 3px;text-align:center}
 /* HAPPY HOURS */
+/* ── Happy Hours ── */
 .hh-wrap{display:flex;flex-direction:column}
-.hh-dow-strip{display:flex;gap:6px;padding:14px 22px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0}
-.hh-dow{flex:1;min-width:34px;padding:8px 2px;border:1px solid var(--hair);border-radius:10px;background:var(--panel);color:var(--ink-soft);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.02em;cursor:pointer;text-align:center}
-.hh-dow.on{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.hh-hdr-row{display:flex;align-items:center;justify-content:space-between;padding:0 22px 10px;flex-shrink:0}
+.hh-hdr-title{font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:-.02em;color:var(--ink)}
+.hh-open-count{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#12B36A;display:flex;align-items:center;gap:5px}
+.hh-open-dot{width:7px;height:7px;border-radius:50%;background:#12B36A;flex-shrink:0;display:inline-block}
+.hh-dow-strip{display:flex;gap:6px;padding:0 22px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;align-items:center}
+.hh-dow{width:36px;height:36px;min-width:36px;border:2px solid #d4cdbf;border-radius:10px;background:var(--panel);color:#8a8372;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;letter-spacing:0}
+.hh-dow.on{background:#17140F;border:2.5px solid #17140F;color:#F6F1E7;box-shadow:2px 3px 0 #a39b88}
+.hh-add-slot{flex:1;min-width:50px;height:36px;border:2px dashed #c8c1b4;border-radius:10px;background:transparent;color:#8a8372;font-family:var(--body);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.04em;text-transform:uppercase;padding:0;white-space:nowrap}
 .hh-list{padding:12px 22px;display:flex;flex-direction:column;gap:12px}
-.hh-empty{padding:32px 0;text-align:center;color:var(--taupe);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
-.hh-card{border:1px solid var(--hair);border-radius:14px;background:var(--panel);overflow:hidden;display:flex}
-.hh-spine{width:4px;background:var(--maroon);flex-shrink:0}
-.hh-body{flex:1;padding:14px 14px 12px}
-.hh-name{font-family:var(--disp);font-size:17px;font-weight:600;color:var(--ink);line-height:1.2;margin-bottom:4px}
-.hh-meta{font-family:var(--mono);font-size:11px;color:var(--taupe);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
-.hh-deal{font-family:var(--mono);font-size:12px;color:var(--maroon);margin-bottom:8px}
-.hh-offers{list-style:none;margin:2px 0 10px;padding:0}
-.hh-offer-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--hair)}
-.hh-offer-row:last-child{border-bottom:none}
-.hh-offer-item{font-family:var(--body);font-size:13px;color:var(--ink-soft);line-height:1.35;text-transform:capitalize}
-.hh-offer-price{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--maroon);white-space:nowrap;flex-shrink:0}
+.hh-empty{padding:32px 0;text-align:center;color:#8a8372;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+/* card */
+.hh-card{border:2.5px solid #17140F;border-radius:12px;box-shadow:3px 4px 0 #17140F;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#fff;display:flex;flex-direction:column}
+.hh-card.soon{border:2px solid #c8c1b4;box-shadow:none;opacity:.82}
+.hh-band{height:28px;border-bottom:2px solid #17140F;padding:0 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hh-card.soon .hh-band{background:#F0EDE8 !important;border-bottom-width:1.5px;border-bottom-color:#d4cdbf}
+.hh-band-left{display:flex;align-items:center;gap:8px;min-width:0}
+.hh-status-pill{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:#fff;border:1px solid #17140F;border-radius:100px;padding:2px 7px 2px 5px;display:inline-flex;align-items:center;gap:3px;color:#17140F;flex-shrink:0;white-space:nowrap}
+.hh-status-dot{width:5px;height:5px;border-radius:50%;background:#12B36A;flex-shrink:0;display:inline-block}
+.hh-card.soon .hh-status-pill{background:transparent;border-color:#7C5CFF;color:#7C5CFF}
+.hh-band-until{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;white-space:nowrap}
+.hh-card.soon .hh-band-until{color:#8a8372}
+.hh-overflow{font-family:var(--body);font-size:15px;color:#fff;opacity:.45;line-height:1;flex-shrink:0;padding-left:6px}
+.hh-card.soon .hh-overflow{color:#17140F}
+.hh-body{padding:8px 12px 10px;display:flex;gap:10px;background:#fff;align-items:flex-start}
+.hh-body-main{flex:1;min-width:0}
+.hh-name{font-family:var(--disp);font-weight:800;font-size:16px;color:#17140F;line-height:1.2;letter-spacing:-.01em}
+.hh-card.soon .hh-name{color:#a39b88}
+.hh-meta{font-family:var(--body);font-size:10px;font-weight:500;color:#8a8372;margin-top:3px}
+.hh-card.soon .hh-meta{color:#b8b2a8}
+.hh-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.hh-chip{font-family:var(--body);font-size:10px;font-weight:700;border:1.5px solid #17140F;border-radius:6px;padding:4px 8px;color:#17140F;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.hh-card.soon .hh-chip{border-color:#c8c1b4;color:#a39b88}
+.hh-chip-price{font-style:normal;font-weight:700}
+.hh-card.soon .hh-chip-price{color:#a39b88 !important}
+.hh-time-badge{border:1.5px solid #17140F;border-radius:8px;padding:5px 9px;background:#F6F1E7;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;min-width:52px;margin-top:2px}
+.hh-card.soon .hh-time-badge{border-color:#c8c1b4;opacity:.7}
+.hh-badge-range{font-family:var(--body);font-weight:800;font-size:14px;color:#17140F;line-height:1;white-space:nowrap;letter-spacing:-.01em}
+.hh-badge-ap{font-family:var(--body);font-weight:600;font-size:9px;color:#8a8372;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+/* detail */
+.hh-det{padding:24px 22px}
+.hh-det-title{font-family:var(--disp);font-size:26px;font-weight:800;line-height:1.2;margin-bottom:14px;color:#17140F}
+.hh-det-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #c8c1b4}
+.hh-det-row:last-of-type{border-bottom:none}
+.hh-det-ico{font-size:16px;line-height:1.4;flex-shrink:0;width:22px;text-align:center}
+.hh-det-val{font-size:14px;color:#4a4535;line-height:1.4;word-break:break-word}
+.hh-det-deal{font-family:var(--mono);font-size:13px;color:var(--maroon);font-weight:600}
+.hh-det-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.hh-det-tag{padding:5px 10px;border-radius:8px;border:1.5px solid #c8c1b4;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#8a8372}
+.hh-det-tag.cur{background:#17140F;color:#F6F1E7;border-color:#17140F}
+.hh-det-btns{display:flex;gap:10px;margin-top:20px}
+.hh-det-btn{flex:1;padding:13px;border-radius:10px;font-family:var(--body);font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1.5px solid #c8c1b4;background:transparent;color:#8a8372}
+.hh-det-btn.danger{color:var(--maroon);border-color:var(--maroon)}
 .hh-det-inc{margin:16px 0 4px}
-.hh-det-inc-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:6px}
+.hh-det-inc-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a8372;margin-bottom:6px}
+.hh-offers{list-style:none;margin:2px 0 10px;padding:0}
+.hh-offer-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed #c8c1b4}
+.hh-offer-row:last-child{border-bottom:none}
+.hh-offer-item{font-family:var(--body);font-size:13px;color:#4a4535;line-height:1.35;text-transform:capitalize}
+.hh-offer-price{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--maroon);white-space:nowrap;flex-shrink:0}
 .hh-offers.lg .hh-offer-row{padding:9px 0}
 .hh-offers.lg .hh-offer-item{font-size:15px}
 .hh-offers.lg .hh-offer-price{font-size:14px}
-.hh-day-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
-.hh-tag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--hair);color:var(--ink-soft)}
-.hh-tag.cur{background:var(--maroon);color:#fff}
-.hh-btns{display:flex;gap:8px}
-.hh-btn{flex:1;padding:9px;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid var(--hair)}
-.hh-btn.ghost{background:transparent;color:var(--ink-soft)}
-.hh-btn.danger{background:transparent;color:var(--maroon);border-color:var(--maroon)}
-.hh-card-tap{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.hh-det{padding:24px 22px}
-.hh-det-title{font-family:var(--disp);font-size:26px;font-weight:700;line-height:1.2;margin-bottom:14px;color:var(--ink)}
-.hh-det-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--hair)}
-.hh-det-row:last-of-type{border-bottom:none}
-.hh-det-ico{font-size:16px;line-height:1.4;flex-shrink:0;width:22px;text-align:center}
-.hh-det-val{font-size:14px;color:var(--ink-soft);line-height:1.4;word-break:break-word}
-.hh-det-deal{font-family:var(--mono);font-size:13px;color:var(--maroon);font-weight:600}
-.hh-det-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
-.hh-det-tag{padding:5px 10px;border-radius:8px;border:1px solid var(--hair);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--taupe)}
-.hh-det-tag.cur{background:var(--maroon);color:#fff;border-color:var(--maroon)}
-.hh-det-btns{display:flex;gap:10px;margin-top:20px}
-.hh-det-btn{flex:1;padding:13px;border-radius:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--hair);background:transparent;color:var(--ink-soft)}
-.hh-det-btn.danger{color:var(--maroon);border-color:var(--maroon)}
+/* form */
 .hh-also{background:var(--panel);border-radius:10px;padding:10px 12px;margin-bottom:14px}
-.hh-also-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);margin-bottom:6px}
-.hh-also-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--hair)}
+.hh-also-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#8a8372;margin-bottom:6px}
+.hh-also-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #c8c1b4}
 .hh-also-row:last-child{border-bottom:none}
-.hh-also-name{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%}
-.hh-also-time{font-family:var(--mono);font-size:10px;color:var(--maroon);white-space:nowrap}
+.hh-also-name{font-size:12px;color:#4a4535;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%}
+.hh-also-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--maroon);white-space:nowrap}
 .hh-add-wrap{padding:0 22px 4px}
-.hh-add-btn{width:100%;padding:13px;border:1.5px dashed var(--hair2);border-radius:12px;background:transparent;color:var(--taupe);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
-.hh-form{border:1px solid var(--hair);border-radius:14px;background:var(--paper-alt);padding:16px;margin:8px 22px 4px}
-.hh-form-ttl{font-family:var(--disp);font-size:18px;font-weight:600;margin-bottom:14px;color:var(--ink)}
+.hh-add-btn{width:100%;padding:13px;border:1.5px dashed #c8c1b4;border-radius:12px;background:transparent;color:#8a8372;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.hh-form{border:1.5px solid #c8c1b4;border-radius:14px;background:var(--paper-alt);padding:16px;margin:8px 22px 4px}
+.hh-form-ttl{font-family:var(--disp);font-size:18px;font-weight:800;margin-bottom:14px;color:#17140F}
 .hh-dow-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.hh-dow-cb{padding:6px 10px;border-radius:8px;border:1px solid var(--hair);background:var(--panel);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--ink-soft)}
-.hh-dow-cb.on{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.hh-dow-cb{padding:6px 10px;border-radius:8px;border:1.5px solid #c8c1b4;background:var(--panel);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:#8a8372}
+.hh-dow-cb.on{background:#17140F;color:#F6F1E7;border-color:#17140F}
 .hh-form-row{margin-bottom:10px}
-.hh-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-bottom:4px}
+.hh-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a8372;margin-bottom:4px}
 .hh-time-row{display:flex;gap:8px}
 .hh-time-row .fi{flex:1}
 .hh-time-field{flex:1;display:flex;flex-direction:column;gap:3px}
-.hh-time-lbl{font-size:10px;font-family:var(--mono);color:var(--taupe);text-transform:uppercase;letter-spacing:.05em}
-.hh-daily{padding:14px 22px 10px;border-bottom:1px solid var(--hair);margin-bottom:6px}
-.hh-daily-hd{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--maroon);margin-bottom:10px}
-.hh-daily-card{display:flex;border:1px solid var(--hair);border-radius:10px;background:var(--panel);overflow:hidden;margin-bottom:8px}
+.hh-time-lbl{font-size:10px;font-family:'JetBrains Mono',monospace;color:#8a8372;text-transform:uppercase;letter-spacing:.05em}
+.hh-daily{padding:14px 22px 10px;border-bottom:1px solid #c8c1b4;margin-bottom:6px}
+.hh-daily-hd{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--maroon);margin-bottom:10px}
+.hh-daily-card{display:flex;border:2px solid #c8c1b4;border-radius:10px;background:var(--panel);overflow:hidden;margin-bottom:8px}
 .hh-daily-spine{width:3px;background:var(--maroon);flex-shrink:0}
 .hh-daily-body{flex:1;padding:9px 12px}
-.hh-daily-name{font-family:var(--disp);font-size:15px;font-weight:600;color:var(--ink)}
-.hh-daily-info{font-family:var(--mono);font-size:11px;color:var(--taupe);letter-spacing:.04em;margin-top:2px}
-.hh-daily-deal{font-family:var(--mono);font-size:11px;color:var(--maroon);margin-top:1px}
+.hh-daily-name{font-family:var(--disp);font-size:15px;font-weight:800;color:#17140F}
+.hh-daily-info{font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a8372;letter-spacing:.04em;margin-top:2px}
+.hh-daily-deal{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--maroon);margin-top:1px}
 .act-hh{width:calc(100% - 44px);margin:16px 22px 0;background:none;border:1px solid var(--maroon);color:var(--maroon);padding:13px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;text-align:center}
 </style>
 </head>
@@ -809,9 +831,69 @@ function bDiscover(){
 }
 
 // ---- HAPPY HOURS ----
+const HH_ACCENTS=[{c:'#F5A524',t:'#FFF8E8'},{c:'#1FA6A0',t:'#E8F8F7'}];
+function hhAccent(h){const n=Array.from(h.id||'').reduce((a,c)=>a+c.charCodeAt(0),0);return HH_ACCENTS[n%HH_ACCENTS.length];}
+function isHHOpenNow(h){
+  const now=new Date(),dow=DOW_KEYS[now.getDay()];
+  if(!(h.days||[]).includes(dow))return false;
+  if(!h.timeStart)return false;
+  const cur=now.getHours()*60+now.getMinutes();
+  const[sh,sm]=(h.timeStart||'00:00').split(':').map(Number);
+  const[eh,em]=(h.timeEnd||'23:59').split(':').map(Number);
+  return cur>=sh*60+sm&&cur<eh*60+em;
+}
+function hhOpensSoon(h){
+  const now=new Date(),dow=DOW_KEYS[now.getDay()];
+  if(!(h.days||[]).includes(dow)||!h.timeStart)return false;
+  const cur=now.getHours()*60+now.getMinutes();
+  const[sh,sm]=(h.timeStart||'00:00').split(':').map(Number);
+  return cur<sh*60+sm;
+}
+function hhOpensIn(h){
+  const now=new Date();const cur=now.getHours()*60+now.getMinutes();
+  const[sh,sm]=(h.timeStart||'00:00').split(':').map(Number);const diff=(sh*60+sm)-cur;
+  if(diff<=0)return'';const hrs=Math.floor(diff/60),mins=diff%60;
+  return hrs>0?`IN ${hrs} HR${hrs!==1?'S':''}`:`IN ${mins} MIN`;
+}
+function hhUntil(h){
+  if(!h.timeEnd)return'';
+  const[eh,em]=h.timeEnd.split(':').map(Number);
+  const ap=eh>=12?'PM':'AM';const hr=eh%12||12;const mn=em?':'+String(em).padStart(2,'0'):'';
+  return`UNTIL ${hr}${mn} ${ap}`;
+}
+function hhOpensAt(h){
+  if(!h.timeStart)return'';
+  const[sh,sm]=h.timeStart.split(':').map(Number);
+  const ap=sh>=12?'PM':'AM';const hr=sh%12||12;const mn=sm?':'+String(sm).padStart(2,'0'):'';
+  return`OPENS ${hr}${mn} ${ap}`;
+}
+function hhTimeBadge(h){
+  if(!h.timeStart)return'';
+  const ph=t=>{const[hr,mn]=t.split(':').map(Number);return{h:hr%12||12,m:mn,ap:hr>=12?'PM':'AM'};};
+  const s=ph(h.timeStart);
+  const e=h.timeEnd?ph(h.timeEnd):null;
+  const sm=s.m?':'+String(s.m).padStart(2,'0'):'';
+  const em=e&&e.m?':'+String(e.m).padStart(2,'0'):'';
+  const range=e?`${s.h}${sm}–${e.h}${em}`:`${s.h}${sm}`;
+  const ap=e?(s.ap===e.ap?s.ap:`${s.ap}`):`${s.ap}`;
+  return`<div class="hh-time-badge"><div class="hh-badge-range">${range}</div><div class="hh-badge-ap">${ap}</div></div>`;
+}
+function hhDayLabel(h){
+  const days=h.days||[];
+  if(days.length===7)return'Daily';
+  const wk=['mon','tue','wed','thu','fri'];
+  if(wk.every(d=>days.includes(d))&&!days.includes('sat')&&!days.includes('sun'))return'Mon–Fri';
+  return days.map(d=>DOW_ABB[DOW_KEYS.indexOf(d)]).filter(Boolean).join('·');
+}
+function hhChips(h,accent){
+  const offers=bestOffers(h);
+  if(!offers.length)return'';
+  return`<div class="hh-chips">${offers.map(o=>{const priceHtml=o.price?` <b class="hh-chip-price" style="color:${accent.c}">${esc(o.price)}</b>`:'';return`<span class="hh-chip" style="background:${accent.t}">${esc(o.item)}${priceHtml}</span>`;}).join('')}</div>`;
+}
 function bHappyHours(){
   if(!hhDay)hhDay=todayDow();
   const strip=DOW_KEYS.map((d,i)=>`<button class="hh-dow${hhDay===d?' on':''}" data-a="hhd" data-d="${d}">${DOW_SHORT[i]}</button>`).join('');
+  const addSlot=hhAddOpen?'':`<button class="hh-add-slot" data-a="hhop">+ Add</button>`;
   let formHtml='';
   if(hhAddOpen){
     const f=hhF;
@@ -820,20 +902,42 @@ function bHappyHours(){
     const alsoOn=existingForDay.length?`<div class="hh-also"><div class="hh-also-lbl">Also on ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]}</div>${existingForDay.map(h=>{const t=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join('–');return`<div class="hh-also-row"><span class="hh-also-name">${esc(h.title)}</span>${t?`<span class="hh-also-time">${esc(t)}</span>`:''}</div>`;}).join('')}</div>`:'';
     formHtml=`<div class="hh-form">${alsoOn}<div class="hh-form-ttl">${hhEditId?'Edit Happy Hour':'New Happy Hour'}</div><div class="hh-form-row"><div class="hh-label">Name</div><input class="fi" id="hhf-name" type="text" placeholder="Bar or restaurant name" value="${esc(f.title||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Location</div><input class="fi" id="hhf-loc" type="text" placeholder="Address or neighborhood" value="${esc(f.location||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Hours</div><div class="hh-time-row"><div class="hh-time-field"><div class="hh-time-lbl">Start</div><input class="fi" id="hhf-ts" type="time" value="${esc(f.timeStart||'17:00')}"></div><div class="hh-time-field"><div class="hh-time-lbl">End</div><input class="fi" id="hhf-te" type="time" value="${esc(f.timeEnd||'19:00')}"></div></div></div><div class="hh-form-row"><div class="hh-label">Days it recurs</div><div class="hh-dow-row">${dayChecks}</div></div><div class="hh-form-row"><div class="hh-label">Deal / specials</div><textarea class="fi" id="hhf-deal" rows="3" placeholder="$7 martinis&#10;$5 apps/snacks&#10;$10 burger" style="resize:vertical;min-height:64px">${esc(f.deal||'')}</textarea></div><div class="hh-form-row"><div class="hh-label">Link (optional)</div><input class="fi" id="hhf-link" type="url" placeholder="https://…" value="${esc(f.link||'')}" autocomplete="off"></div><div class="ak-btns"><button class="btn-p" data-a="hhsv">Save</button><button class="btn-s" data-a="hhcx" style="width:auto;white-space:nowrap">Cancel</button></div></div>`;
   }
-  const addBtn=hhAddOpen?'':
-    `<div class="hh-add-wrap"><button class="hh-add-btn" data-a="hhop">+ Add Happy Hour</button></div>`;
   const list=hhForDow(hhDay);
+  const isToday=hhDay===todayDow();
+  const openCount=isToday?list.filter(h=>isHHOpenNow(h)).length:0;
+  const openLabel=openCount>0?`<div class="hh-open-count"><span class="hh-open-dot"></span>${openCount} OPEN NOW</div>`:'';
   let cards='';
   if(list.length){
-    cards=list.map(h=>{
-      const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
-      const tags=DOW_KEYS.filter(d=>(h.days||[]).includes(d)).map((d,_,arr)=>{const i=DOW_KEYS.indexOf(d);return`<span class="hh-tag${d===hhDay?' cur':''}">${DOW_ABB[i]}</span>`;}).join('');
-      return`<div class="hh-card hh-card-tap" data-a="hhdv" data-id="${h.id}"><div class="hh-spine"></div><div class="hh-body"><div class="hh-name">${esc(h.title)}</div>${h.location?`<div class="hh-meta">📍 ${esc(h.location)}</div>`:''}${time?`<div class="hh-meta">🕔 ${esc(time)}</div>`:''}${offersHtml(h)}${tags?`<div class="hh-day-tags">${tags}</div>`:''}<div class="hh-btns"><button class="hh-btn ghost" data-a="hhed" data-id="${h.id}">Edit</button><button class="hh-btn danger" data-a="hhrm" data-id="${h.id}">Remove</button></div></div></div>`;
+    // sort: open now first, then soon, then others
+    const sorted=[...list].sort((a,b)=>{const ao=isToday&&isHHOpenNow(a),bo=isToday&&isHHOpenNow(b);if(ao&&!bo)return-1;if(!ao&&bo)return 1;return 0;});
+    cards=sorted.map(h=>{
+      const accent=hhAccent(h);
+      const open=isToday&&isHHOpenNow(h);
+      const soon=isToday&&!open&&hhOpensSoon(h);
+      const cardCls=`hh-card${soon?' soon':''}`;
+      const bandBg=open||(!soon&&!open&&!isToday)?accent.c:'';
+      const bandStyle=bandBg?`style="background:${bandBg}"`:'';
+      let bandLeft='',bandUntil='';
+      if(open){
+        const until=hhUntil(h);
+        bandLeft=`<span class="hh-status-pill"><span class="hh-status-dot"></span>OPEN NOW</span>`;
+        bandUntil=until?`<span class="hh-band-until">${until}</span>`:'';
+      } else if(soon){
+        const opensAt=hhOpensAt(h);const opensIn=hhOpensIn(h);
+        bandLeft=`<span class="hh-status-pill">${opensAt}</span>`;
+        bandUntil=opensIn?`<span class="hh-band-until">${opensIn}</span>`:'';
+      } else if(!isToday){
+        bandLeft=`<span class="hh-status-pill" style="background:transparent;border-color:rgba(255,255,255,.5);color:#fff">HAPPY HOUR</span>`;
+      }
+      const timeStr=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
+      const dayLbl=hhDayLabel(h);
+      const metaStr=[timeStr,dayLbl].filter(Boolean).join(' · ');
+      return`<div class="${cardCls}" data-a="hhdv" data-id="${h.id}"><div class="hh-band" ${bandStyle}><div class="hh-band-left">${bandLeft}${bandUntil}</div><span class="hh-overflow">···</span></div><div class="hh-body"><div class="hh-body-main"><div class="hh-name">${esc(h.title)}</div>${metaStr?`<div class="hh-meta">${esc(metaStr)}</div>`:''}${hhChips(h,accent)}</div>${hhTimeBadge(h)}</div></div>`;
     }).join('');
   }else{
-    cards=`<div class="hh-empty">No happy hours saved for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
+    cards=`<div class="hh-empty">No happy hours for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
   }
-  return`<div class="hh-wrap"><div class="hh-dow-strip">${strip}</div>${formHtml}${addBtn}<div class="hh-list">${cards}</div></div>`;
+  return`<div class="hh-wrap"><div class="hh-hdr-row"><div class="hh-hdr-title">Happy Hours</div>${openLabel}</div><div class="hh-dow-strip">${strip}${addSlot}</div>${formHtml}<div class="hh-list">${cards}</div></div>`;
 }
 function bHHDetail(h){
   const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
