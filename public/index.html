@@ -234,7 +234,7 @@ html,body{background:var(--paper);height:100%;font-family:var(--body);color:var(
 .ff{margin-bottom:15px}
 .fl{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:7px;display:block}
 .fi{width:100%;max-width:100%;min-width:0;box-sizing:border-box;background:var(--paper);border:1px solid var(--hair2);padding:11px 13px;color:var(--ink);font-size:16px;font-family:var(--body);outline:none;transition:border-color .15s;display:block}
-input[type="date"].fi{font-family:var(--mono);font-size:14px;letter-spacing:.02em;-webkit-appearance:none;appearance:none}
+input[type="date"].fi{font-family:var(--mono);font-size:16px;letter-spacing:.02em;-webkit-appearance:none;appearance:none}
 .fi:focus{border-color:var(--pine)}
 .fi::placeholder{color:var(--taupe-l)}
 .fi.ta{min-height:76px;resize:none;line-height:1.6;font-style:italic}
@@ -1102,31 +1102,36 @@ function bEventCard(e,occDate,showCd){
   const meta=metaParts.length?`<div class="ec-meta">${metaParts.join(' · ')}</div>`:'';
   const status=inked
     ?`<span class="ec-chip inked">✓</span>`
-    :`<span class="ec-chip pencil">PENCIL</span>`;
+    :`<span class="ec-chip pencil">More</span>`;
   return`<div class="ec" data-a="od" data-id="${e.id}" data-date="${occDate||''}">${timeBlock}<div class="ec-spine" style="background:${cat.c}"></div><div class="ec-main"><div class="ec-kick" style="color:${cat.c}">${catKey}</div><div class="ec-ttl">${esc(e.title)}</div>${meta}</div><div class="ec-status">${status}</div></div>`;
 }
 function cdShort(ds){try{return cdB(ds)?cdB(ds).replace(/<[^>]+>/g,'').trim():'';}catch{return'';}}
 function dayHeaderHTML(k,count){
-  const we=k!=='tbd'&&isWeekendDate(k);
-  const rel=k==='tbd'?'':relDayLabel(k);
+  const we=k!=='tbd'&&k!=='everyday'&&isWeekendDate(k);
+  const rel=(k==='tbd'||k==='everyday')?'':relDayLabel(k);
   const relTitle=rel==='TODAY'?'Today':rel==='TOMORROW'?'Tomorrow':'';
-  const hd=k==='tbd'?'Date TBD':(relTitle||monoDay(k));
+  let hd;
+  if(k==='tbd') hd='Date TBD';
+  else if(k==='everyday') hd='Everyday';
+  else if(relTitle){
+    try{const[y,m,d]=k.split('-').map(Number);const wday=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(y,m-1,d).getDay()];hd=wday+' · '+relTitle;}catch{hd=relTitle;}
+  } else hd=monoDay(k);
   const cnt=count?`<div class="day-hd-c">· ${count} event${count!==1?'s':''}</div>`:'';
   return `<div class="day-hd"><div class="day-hd-l${we?' we':''}">${hd}</div>${cnt}</div>`;
 }
 
 // ---- AGENDA (home list) ----
 function bAgenda(){
-  const upcoming=events.filter(e=>{const eff=e.isRecurring?nextOcc(e):e.date;return e.isRecurring||!isPast(eff);}).map(e=>({e,d:(e.isRecurring?nextOcc(e):e.date)||'tbd'}));
-  upcoming.sort((a,b)=>{if(a.d==='tbd')return 1;if(b.d==='tbd')return-1;return a.d.localeCompare(b.d);});
+  const upcoming=events.filter(e=>{const eff=e.isRecurring?nextOcc(e):e.date;return e.isRecurring||!isPast(eff);}).map(e=>{const d=(e.isRecurring?nextOcc(e):e.date);const key=d||(e.isRecurring?'everyday':'tbd');return{e,d:key};});
+  upcoming.sort((a,b)=>{if(a.d==='tbd')return 1;if(b.d==='tbd')return-1;if(a.d==='everyday')return 1;if(b.d==='everyday')return-1;return a.d.localeCompare(b.d);});
   if(!upcoming.length){
     return`<div class="empty"><div class="empty-rule"></div><div class="empty-t">The page is blank</div><div class="empty-s">Nothing on the calendar yet. Tap <strong>+</strong> to add your first event.</div></div>`;
   }
   const groups={};upcoming.forEach(({e,d})=>{(groups[d]=groups[d]||[]).push(e);});
-  const keys=Object.keys(groups).sort((a,b)=>a==='tbd'?1:b==='tbd'?-1:a.localeCompare(b));
+  const keys=Object.keys(groups).sort((a,b)=>a==='tbd'?1:b==='tbd'?-1:a==='everyday'?1:b==='everyday'?-1:a.localeCompare(b));
   let html='',lastMonth='';
   keys.forEach(k=>{
-    if(k!=='tbd'){
+    if(k!=='tbd'&&k!=='everyday'){
       const[yy,mm]=k.split('-').map(Number);
       const moKey=yy+'-'+mm;
       if(moKey!==lastMonth){
@@ -1134,7 +1139,7 @@ function bAgenda(){
         html+=`<div class="mo-div"><div class="mo-div-n">${MONTHS[mm-1]}</div><div class="mo-div-l"></div><div class="mo-div-y">${yy}</div></div>`;
       }
     }
-    html+=`<div id="day-${k}">${dayHeaderHTML(k,groups[k].length)}${groups[k].map(e=>bEventCard(e,k==='tbd'?e.date:k,false)).join('')}</div>`;
+    html+=`<div id="day-${k}">${dayHeaderHTML(k,groups[k].length)}${groups[k].map(e=>bEventCard(e,(k==='tbd'||k==='everyday')?e.date:k,false)).join('')}</div>`;
   });
   return html;
 }
