@@ -181,7 +181,7 @@ html,body{background:var(--paper);height:100%;font-family:var(--body);color:var(
 .nb.on .nb-ul{opacity:1}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(74px + env(safe-area-inset-bottom,0px));right:22px;left:auto;width:52px;height:52px;border-radius:50%;background:#17140F;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:101;box-shadow:4px 5px 0 #a39b88}
+.fab{position:fixed;bottom:calc(98px + env(safe-area-inset-bottom,0px));right:22px;left:auto;width:52px;height:52px;border-radius:50%;background:#17140F;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:101;box-shadow:4px 5px 0 #a39b88}
 .fab svg{width:24px;height:24px;stroke:#F6F1E7;stroke-width:2.6;fill:none;stroke-linecap:round}
 
 /* OVERLAYS */
@@ -335,33 +335,33 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;z-index:1000;white-space:nowrap;pointer-events:none;transition:opacity .3s}
 /* ---- Discover tab ---- */
 .disc-wrap{display:flex;flex-direction:column;min-height:0}
-.disc-datestrip{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--paper);border-bottom:1px solid var(--hair);-webkit-overflow-scrolling:touch}
-.disc-day{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:46px;padding:6px 8px;border:1px solid var(--hair);border-radius:12px;background:var(--panel);color:var(--ink-soft);font-family:var(--mono);cursor:pointer;position:relative}
-.disc-day.on{background:var(--pine);color:#fff;border-color:var(--pine)}
-.disc-day .dd-dow{font-size:10px;text-transform:uppercase;letter-spacing:.04em}
-.disc-day .dd-num{font-size:16px;font-weight:600}
-.disc-day .dd-dot{position:absolute;top:-4px;right:-4px;background:var(--maroon);color:#fff;font-size:10px;min-width:16px;height:16px;line-height:16px;border-radius:8px;padding:0 4px}
-.disc-pills{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--paper)}
-.disc-pill{flex:0 0 auto;padding:6px 12px;border:1px solid var(--hair);border-radius:999px;background:var(--panel);color:var(--ink-soft);font-family:var(--mono);font-size:12px;cursor:pointer;white-space:nowrap}
-.disc-pill.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.disc-list{padding:12px;display:flex;flex-direction:column;gap:12px}
-.disc-card{border:1px solid var(--hair);border-radius:16px;overflow:hidden;background:var(--panel);transition:opacity .2s ease,transform .2s ease}
+.disc-daystrip{display:flex;gap:5px;padding:10px 22px 4px;flex-shrink:0}
+.disc-day{flex:1;border-radius:10px;border:2px solid #d4cdbf;padding:7px 0;text-align:center;font-family:var(--body);font-weight:800;font-size:12px;line-height:1;color:#a39b88;background:var(--paper);cursor:pointer}
+.disc-day.on{border:2.5px solid #17140F;background:#17140F;box-shadow:2px 3px 0 #a39b88;color:#F6F1E7}
+.disc-pills{display:flex;gap:7px;padding:8px 22px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0}
+.disc-pill{flex:0 0 auto;font-family:var(--body);font-weight:700;font-size:10px;line-height:1;padding:7px 12px;border-radius:100px;border:2px solid #17140F;background:#fff;color:#17140F;cursor:pointer;white-space:nowrap}
+.disc-pill.on{background:#17140F;color:#fff}
+.disc-list{padding:8px 22px 0;display:flex;flex-direction:column;gap:5px}
+.disc-card{border:2px solid #17140F;border-radius:11px;background:#fff;box-shadow:3px 3px 0 #17140F;overflow:hidden;transition:opacity .2s ease,transform .2s ease}
 .disc-card.disc-out{opacity:0;transform:scale(.96)}
-.disc-thumb{width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--paper-alt)}
-.disc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.disc-body{padding:12px}
-.disc-cat{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.disc-title{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);line-height:1.2}
-.disc-meta{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px}
-.disc-price{font-family:var(--mono);font-size:12px;color:var(--pine);margin-top:2px}
-.disc-desc{font-size:14px;color:var(--ink-soft);margin-top:8px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.disc-src{font-family:var(--mono);font-size:10px;color:var(--taupe);margin-top:8px}
-.disc-actions{display:flex;gap:8px;margin-top:12px}
-.disc-btn{flex:1;padding:10px;border-radius:10px;font-family:var(--mono);font-size:13px;cursor:pointer;border:1px solid var(--hair)}
-.disc-btn.ghost{background:transparent;color:var(--ink-soft)}
-.disc-btn.primary{background:var(--pine);color:#fff;border-color:var(--pine)}
+.dc-band{padding:4px 10px;border-bottom:1.5px solid #17140F;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.dc-band-left{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
+.dc-badge{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:8px;letter-spacing:.08em;padding:2px 6px;border-radius:100px;white-space:nowrap;flex-shrink:0}
+.dc-datetime{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc-overflow{font-family:var(--body);font-weight:700;font-size:13px;opacity:.5;cursor:pointer;flex-shrink:0;padding-left:4px}
+.dc-body{padding:7px 10px 3px}
+.dc-name{font-family:var(--disp);font-weight:800;font-size:15px;color:#17140F;letter-spacing:-.02em;line-height:1.15}
+.dc-loc{font-family:var(--body);font-weight:500;font-size:9px;color:#8a8372;margin-top:2px}
+.dc-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.dc-chip{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;border:1.5px solid #17140F;border-radius:5px;padding:3px 6px;color:#17140F;white-space:nowrap}
+.dc-chip-muted{border-color:#c8c1b4;color:#8a8372}
+.dc-actions{margin:5px 10px 7px;border:1.5px solid #17140F;border-radius:8px;overflow:hidden;display:flex}
+.dc-btn{flex:1;font-family:var(--body);font-weight:700;font-size:9px;line-height:1;padding:7px 0;border:none;cursor:pointer;background:#F6F1E7;color:#8a8372;white-space:nowrap}
+.dc-btn+.dc-btn{border-left:1.5px solid #17140F}
+.dc-btn-hh{font-weight:800;color:#17140F}
+.dc-btn-add{flex:1.2;font-weight:800;background:#17140F;color:#fff}
 .nb{position:relative}
-.nb-badge{position:absolute;top:0;right:calc(50% - 22px);background:var(--maroon);color:#fff;font-size:9px;min-width:15px;height:15px;line-height:15px;border-radius:8px;font-family:var(--mono);padding:0 3px;text-align:center}
+.nb-badge{position:absolute;top:-4px;right:-6px;background:#FF5A3D;color:#fff;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:7px;width:13px;height:13px;line-height:13px;border-radius:50%;border:2px solid #fff;text-align:center;padding:0}
 /* HAPPY HOURS */
 /* ── Happy Hours ── */
 .hh-wrap{display:flex;flex-direction:column}
@@ -811,23 +811,57 @@ async function syncDiscovered(){
 function discFeed(){const evIds=new Set(events.map(e=>e.id));return discovered.filter(e=>!isDismissed(e.id)&&!evIds.has(e.id));}
 function discForDate(d){return discFeed().filter(e=>e.date===d&&(discCat==='all'||e.category===discCat));}
 function discTodayCount(){const t=todayISO(),evIds=new Set(events.map(e=>e.id));return discovered.filter(e=>e.date===t&&!isDismissed(e.id)&&!evIds.has(e.id)).length;}
+// Category tints and band contrast (dark=true means use dark text on band)
+const DISC_TINTS={music:'#F0EDFF',food:'#FFF8E8',outdoors:'#E8F8F7',sports:'#EBF0FF',art:'#FDEEF5',comedy:'#FFF0EE',social:'#E6FAF2',film:'#EEEEFF',other:'#F0EDE8'};
+const DISC_DARK=new Set(['food']); // amber band → dark text
+function discBandStyle(catKey){
+  const c=CAT[catKey]?.c||CAT.other.c;
+  const dark=DISC_DARK.has(catKey);
+  const badgeBg=dark?'rgba(23,20,15,0.15)':'rgba(255,255,255,0.2)';
+  const fg=dark?'#17140F':'#fff';
+  const dtFg=dark?'#17140F':'rgba(255,255,255,0.85)';
+  return{bandBg:c,badgeBg,fg,dtFg};
+}
+function fmtBandDate(iso,time){
+  if(!iso)return'';
+  try{const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);const dw=['SUN','MON','TUE','WED','THU','FRI','SAT'][dt.getDay()];const mo=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][m-1];const base=`${dw} ${d} ${mo}`;return time?`${base} · ${time}`:base;}catch{return'';}
+}
+function discRecurLabel(e){if(!e.isRecurring)return'';const t=(e.recurringType||'').toLowerCase();if(t==='weekly')return'↻ WEEKLY';if(t==='monthly')return'↻ MONTHLY';if(t==='daily')return'↻ DAILY';return'↻ RECURRING';}
+function discSourceHandle(e){const m=(e.notes||'').match(/@([\w.]+)/);return m?`via @${m[1]}`:''}
 function bDiscover(){
   if(!discDate)discDate=todayISO();
+  // Build 7-day DOW strip (next 7 calendar days)
   const base=new Date();base.setHours(0,0,0,0);
-  const days=[];
-  for(let i=0;i<15;i++){const d=new Date(base);d.setDate(base.getDate()+i);const iso=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;days.push({iso,dow:d.toLocaleDateString('en-US',{weekday:'short'}),day:d.getDate(),label:i===0?'Today':(i===1?'Tmrw':'')});}
-  const feedAll=discFeed();
-  const strip=days.map(d=>{const n=feedAll.filter(e=>e.date===d.iso).length;return `<button class="disc-day${discDate===d.iso?' on':''}" data-a="dcd" data-d="${d.iso}"><span class="dd-dow">${d.label||d.dow}</span><span class="dd-num">${d.day}</span>${n?`<span class="dd-dot">${n}</span>`:''}</button>`;}).join('');
-  const pills=['all',...CATK].map(c=>{const lab=c==='all'?'All':(CAT[c]?.l||c);const ic=c==='all'?'✦':(CAT[c]?.i||'');return `<button class="disc-pill${discCat===c?' on':''}" data-a="dcc" data-c="${c}">${ic} ${lab}</button>`;}).join('');
+  const DOW_LTR=['S','M','T','W','T','F','S'];
+  const weekDays=[];
+  for(let i=0;i<7;i++){const d=new Date(base);d.setDate(base.getDate()+i);const iso=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;weekDays.push({iso,ltr:DOW_LTR[d.getDay()]});}
+  // Default discDate to today if it falls outside the 7-day window
+  if(!weekDays.some(d=>d.iso===discDate))discDate=weekDays[0].iso;
+  const strip=weekDays.map(d=>`<button class="disc-day${discDate===d.iso?' on':''}" data-a="dcd" data-d="${d.iso}">${d.ltr}</button>`).join('');
+  const pills=['all',...CATK].map(c=>{const lab=c==='all'?'All':(CAT[c]?.l||c);return `<button class="disc-pill${discCat===c?' on':''}" data-a="dcc" data-c="${c}">${lab}</button>`;}).join('');
   const items=discForDate(discDate);
   const cards=items.map(e=>{
-    const thumb=e.thumbnail?`<div class="disc-thumb"><img src="${e.thumbnail}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`:'';
-    const meta=[e.time,e.location].filter(Boolean).join(' · ');
-    const cc=CAT[e.category]||CAT.other;
-    return `<div class="disc-card" data-id="${e.id}">${thumb}<div class="disc-body"><div class="disc-cat" style="color:${cc.c}">${cc.i} ${cc.l}</div><div class="disc-title">${esc(e.title)}</div>${meta?`<div class="disc-meta">${esc(meta)}</div>`:''}${e.price?`<div class="disc-price">${esc(e.price)}</div>`:''}${e.description?`<div class="disc-desc">${esc(e.description)}</div>`:''}${e.notes?`<div class="disc-src">${esc(e.notes)}</div>`:''}<div class="disc-actions"><button class="disc-btn ghost" data-a="dno" data-id="${e.id}">Not Interested</button><button class="disc-btn ghost" data-a="hhph" data-id="${e.id}" title="Save as recurring happy hour">🍺 Happy Hour</button><button class="disc-btn primary" data-a="dae" data-id="${e.id}">+ Add to Events</button></div></div></div>`;
+    const catKey=e.category&&CAT[e.category]?e.category:'other';
+    const cc=CAT[catKey];
+    const tint=DISC_TINTS[catKey]||DISC_TINTS.other;
+    const{bandBg,badgeBg,fg,dtFg}=discBandStyle(catKey);
+    const catLabel=(cc.l||catKey).toUpperCase();
+    const dtLabel=fmtBandDate(e.date,e.time);
+    const band=`<div class="dc-band" style="background:${bandBg}"><div class="dc-band-left"><span class="dc-badge" style="background:${badgeBg};color:${fg}">${catLabel}</span>${dtLabel?`<span class="dc-datetime" style="color:${dtFg}">${dtLabel}</span>`:''}</div><span class="dc-overflow" style="color:${fg}">···</span></div>`;
+    const locLine=e.location?`<div class="dc-loc">◎ ${esc(e.location)}</div>`:'';
+    // chips
+    const chips=[];
+    if(e.price){const isFree=e.price.toLowerCase()==='free';chips.push(`<span class="dc-chip${isFree?'" style="color:'+cc.c+';border-color:'+cc.c+';background:'+tint:'" style="background:'+tint+'"}'>${esc(e.price)}</span>`);}
+    const recur=discRecurLabel(e);if(recur)chips.push(`<span class="dc-chip dc-chip-muted">${recur}</span>`);
+    const src=discSourceHandle(e);if(src)chips.push(`<span class="dc-chip dc-chip-muted">${esc(src)}</span>`);
+    const chipsHtml=chips.length?`<div class="dc-chips">${chips.join('')}</div>`:'';
+    const showHH=catKey==='food'||catKey==='social'||/(happy.?hour|bar|pub|tavern|brewery)/i.test(e.title+' '+(e.description||''));
+    const hhBtn=showHH?`<button class="dc-btn dc-btn-hh" data-a="hhph" data-id="${e.id}">🍺 HH</button>`:'';
+    const actions=`<div class="dc-actions"><button class="dc-btn" data-a="dno" data-id="${e.id}">Not Interested</button>${hhBtn}<button class="dc-btn dc-btn-add" data-a="dae" data-id="${e.id}">+ Add to Plans</button></div>`;
+    return `<div class="disc-card" data-id="${e.id}">${band}<div class="dc-body"><div class="dc-name">${esc(e.title)}</div>${locLine}${chipsHtml}</div>${actions}</div>`;
   }).join('');
-  const empty=`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing new for ${fmtD(discDate)}</div><div class="empty-s">Try another day or category — fresh finds land daily.</div></div>`;
-  return `<div class="disc-wrap"><div class="disc-datestrip">${strip}</div><div class="disc-pills">${pills}</div><div class="disc-list">${cards||empty}</div></div>`;
+  const empty=`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing new for ${fmtD(discDate)}</div><div class="empty-s">Try another day or check back tomorrow — fresh finds land daily.</div></div>`;
+  return `<div class="disc-wrap"><div class="disc-daystrip">${strip}</div><div class="disc-pills">${pills}</div><div class="disc-list">${cards||empty}</div></div>`;
 }
 
 // ---- HAPPY HOURS ----
