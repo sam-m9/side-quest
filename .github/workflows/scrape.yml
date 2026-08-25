@@ -71,7 +71,7 @@ jobs:
       - name: Fetch Instagram posts via Apify + Gemini
         env:
           APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
-          APIFY_POSTS_TASK_ID: ${{ vars.APIFY_POSTS_TASK_ID }}
+          APIFY_POSTS_TASK_ID: ${{ vars.APIFY_ACTOR_TASK_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/fetch_instagram_posts.py
 
