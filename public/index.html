@@ -851,7 +851,7 @@ function bDiscover(){
     const locLine=e.location?`<div class="dc-loc">◎ ${esc(e.location)}</div>`:'';
     // chips
     const chips=[];
-    if(e.price){const isFree=e.price.toLowerCase()==='free';chips.push(`<span class="dc-chip${isFree?'" style="color:'+cc.c+';border-color:'+cc.c+';background:'+tint:'" style="background:'+tint+'"}'>${esc(e.price)}</span>`);}
+    if(e.price){const isFree=e.price.toLowerCase()==='free';const pStyle=isFree?`color:${cc.c};border-color:${cc.c};background:${tint}`:`background:${tint}`;chips.push(`<span class="dc-chip" style="${pStyle}">${esc(e.price)}</span>`);}
     const recur=discRecurLabel(e);if(recur)chips.push(`<span class="dc-chip dc-chip-muted">${recur}</span>`);
     const src=discSourceHandle(e);if(src)chips.push(`<span class="dc-chip dc-chip-muted">${esc(src)}</span>`);
     const chipsHtml=chips.length?`<div class="dc-chips">${chips.join('')}</div>`:'';
