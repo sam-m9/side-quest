@@ -847,7 +847,8 @@ function hhOpensSoon(h){
   if(!(h.days||[]).includes(dow)||!h.timeStart)return false;
   const cur=now.getHours()*60+now.getMinutes();
   const[sh,sm]=(h.timeStart||'00:00').split(':').map(Number);
-  return cur<sh*60+sm;
+  const start=sh*60+sm;
+  return cur<start&&start-cur<=120;
 }
 function hhOpensIn(h){
   const now=new Date();const cur=now.getHours()*60+now.getMinutes();
@@ -875,7 +876,7 @@ function hhTimeBadge(h){
   const sm=s.m?':'+String(s.m).padStart(2,'0'):'';
   const em=e&&e.m?':'+String(e.m).padStart(2,'0'):'';
   const range=e?`${s.h}${sm}–${e.h}${em}`:`${s.h}${sm}`;
-  const ap=e?(s.ap===e.ap?s.ap:`${s.ap}`):`${s.ap}`;
+  const ap=e?(s.ap===e.ap?s.ap:`${s.ap}–${e.ap}`):`${s.ap}`;
   return`<div class="hh-time-badge"><div class="hh-badge-range">${range}</div><div class="hh-badge-ap">${ap}</div></div>`;
 }
 function hhDayLabel(h){
@@ -909,7 +910,13 @@ function bHappyHours(){
   let cards='';
   if(list.length){
     // sort: open now first, then soon, then others
-    const sorted=[...list].sort((a,b)=>{const ao=isToday&&isHHOpenNow(a),bo=isToday&&isHHOpenNow(b);if(ao&&!bo)return-1;if(!ao&&bo)return 1;return 0;});
+    const sorted=[...list].sort((a,b)=>{
+      const ao=isToday&&isHHOpenNow(a),bo=isToday&&isHHOpenNow(b);
+      if(ao!==bo)return ao?-1:1;
+      const as=!ao&&isToday&&hhOpensSoon(a),bs=!bo&&isToday&&hhOpensSoon(b);
+      if(as!==bs)return as?-1:1;
+      return 0;
+    });
     cards=sorted.map(h=>{
       const accent=hhAccent(h);
       const open=isToday&&isHHOpenNow(h);

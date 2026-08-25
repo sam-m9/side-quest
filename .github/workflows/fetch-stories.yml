@@ -34,17 +34,16 @@ jobs:
             exit 0
           fi
           HOUR=$(TZ=America/Chicago date +%H)
-          MIN=$(TZ=America/Chicago date +%M)
           DOW=$(TZ=America/Chicago date +%u)   # 1=Mon … 7=Sun
-          echo "America/Chicago time: ${HOUR}:${MIN}, day-of-week: ${DOW}"
-          # Weekdays at 14:30
-          if [ "$DOW" -le 5 ] && [ "$HOUR" = "14" ] && [ "$MIN" = "30" ]; then
+          echo "America/Chicago hour: ${HOUR}, day-of-week: ${DOW}"
+          # Weekdays at 14:xx (2 PM)
+          if [ "$DOW" -le 5 ] && [ "$HOUR" = "14" ]; then
             echo "go=true" >> "$GITHUB_OUTPUT"
-          # Weekends at 11:00
-          elif [ "$DOW" -ge 6 ] && [ "$HOUR" = "11" ] && [ "$MIN" = "00" ]; then
+          # Weekends at 11:xx (11 AM)
+          elif [ "$DOW" -ge 6 ] && [ "$HOUR" = "11" ]; then
             echo "go=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Not the target Central Time — skipping this trigger."
+            echo "Not the target Central Time hour — skipping this trigger."
             echo "go=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -63,7 +62,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install requests google-genai python-dateutil
+        run: pip install requests python-dateutil
 
       - name: Fetch stories and extract events
         env:

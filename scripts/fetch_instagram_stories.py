@@ -430,7 +430,9 @@ def merge_events(existing: list[dict], new_events: list[dict]) -> tuple[list[dic
 
     added = 0
     cutoff = today()
-    merged = [e for e in existing if _parse_date(e.get("date")) and _parse_date(e.get("date")) >= cutoff]
+    # Keep events with no parseable date (TBD/recurring) and future-dated events;
+    # only drop events whose date is confirmed to be in the past.
+    merged = [e for e in existing if (lambda d: d is None or d >= cutoff)(_parse_date(e.get("date")))]
 
     for event in new_events:
         if event["id"] in seen_ids:
