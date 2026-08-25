@@ -355,6 +355,7 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .dc-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .dc-chip{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;border:1.5px solid #17140F;border-radius:5px;padding:4px 7px;color:#17140F;white-space:nowrap}
 .dc-chip-muted{border-color:#c8c1b4;color:#8a8372}
+.dc-chip-link{border-color:#17140F;color:#17140F;background:#F6F1E7;cursor:pointer;text-decoration:none}
 .dc-actions{margin:7px 10px 9px;border:1.5px solid #17140F;border-radius:8px;overflow:hidden;display:flex}
 .dc-btn{flex:1;font-family:var(--body);font-weight:700;font-size:11px;line-height:1;padding:9px 0;border:none;cursor:pointer;background:#F6F1E7;color:#8a8372;white-space:nowrap}
 .dc-btn+.dc-btn{border-left:1.5px solid #17140F}
@@ -854,6 +855,7 @@ function bDiscover(){
     if(e.price){const isFree=e.price.toLowerCase()==='free';const pStyle=isFree?`color:${cc.c};border-color:${cc.c};background:${tint}`:`background:${tint}`;chips.push(`<span class="dc-chip" style="${pStyle}">${esc(e.price)}</span>`);}
     const recur=discRecurLabel(e);if(recur)chips.push(`<span class="dc-chip dc-chip-muted">${recur}</span>`);
     const src=discSourceHandle(e);if(src)chips.push(`<span class="dc-chip dc-chip-muted">${esc(src)}</span>`);
+    if(e.link)chips.push(`<button class="dc-chip dc-chip-link" data-a="dlink" data-url="${esc(e.link)}">↗ View Post</button>`);
     const chipsHtml=chips.length?`<div class="dc-chips">${chips.join('')}</div>`:'';
     const showHH=catKey==='food'||catKey==='social'||/(happy.?hour|bar|pub|tavern|brewery)/i.test(e.title+' '+(e.description||''));
     const hhBtn=showHH?`<button class="dc-btn dc-btn-hh" data-a="hhph" data-id="${e.id}">🍺 HH</button>`:'';
@@ -1607,6 +1609,7 @@ const A={
   },
   hhdn:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};view='hh';render();},
   evhh:b=>{const ev=events.find(x=>x.id===b.dataset.id);if(!ev)return;const dup=hhFindByTitle(ev.title);if(dup){hhAddOpen=false;hhEditId=null;hhF={};hhDay=(dup.days&&dup.days[0])||hhDay;hhDetId=dup.id;view='hh';detId=null;isEdit=false;showToast('Already in Happy Hours');render();return;}const[ts,te]=splitRange(ev.time||'');const allDays=ev.isRecurring&&(!ev.recurringType||/daily|every.?day/i.test(ev.recurringType||''));hhAddOpen=true;hhEditId=null;hhF={title:ev.title||'',location:ev.location||'',timeStart:normTo24(ts)||'17:00',timeEnd:normTo24(te)||'19:00',deal:richDeal(ev),link:ev.link||'',notes:ev.notes||ev.description||'',days:allDays?[...DOW_KEYS]:[hhDay||todayDow()]};view='hh';detId=null;isEdit=false;render();},
+  dlink:b=>{const u=b.dataset.url;if(u)window.open(u,'_blank','noopener');},
   dno:b=>{const id=b.dataset.id,card=b.closest('.disc-card'),ev=discovered.find(e=>e.id===id);const commit=()=>{if(!isDismissed(id)){dismissed.push({id,date:ev?ev.date:''});saveDismissed();}render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   dae:b=>{const id=b.dataset.id,raw=discovered.find(e=>e.id===id);if(!raw)return;const ev=sanitizeEvent({...raw,status:'want'});if(events.some(x=>x.id===ev.id)){showToast('Already in your events');return;}const card=b.closest('.disc-card');const commit=()=>{events.push(ev);saveData();if(!isDismissed(id)){dismissed.push({id,date:raw.date});saveDismissed();}showToast('✓ Added to your events');render();};if(card){card.classList.add('disc-out');setTimeout(commit,200);}else commit();},
   sf:b=>{filter=b.dataset.f;render();},
