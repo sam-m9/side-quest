@@ -1,0 +1,85 @@
+name: Fetch Instagram Stories
+
+on:
+  schedule:
+    # 2:30 PM CT weekdays — CDT (UTC-5): 19:30 UTC, CST (UTC-6): 20:30 UTC
+    - cron: "30 19 * * 1-5"   # 2:30 PM CDT (summer)
+    - cron: "30 20 * * 1-5"   # 2:30 PM CST (winter)
+    # 11:00 AM CT weekends — CDT: 16:00 UTC, CST: 17:00 UTC
+    - cron: "0 16 * * 0,6"    # 11:00 AM CDT (summer)
+    - cron: "0 17 * * 0,6"    # 11:00 AM CST (winter)
+  workflow_dispatch: {}        # manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-instagram-stories
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    # Each scheduled time fires at both UTC candidates; this job lets only the
+    # one that matches the real Central Time target proceed.
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.check.outputs.go }}
+    steps:
+      - name: Check if this is the correct Central Time firing
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "Manual/dispatch run — proceeding."
+            echo "go=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          HOUR=$(TZ=America/Chicago date +%H)
+          MIN=$(TZ=America/Chicago date +%M)
+          DOW=$(TZ=America/Chicago date +%u)   # 1=Mon … 7=Sun
+          echo "America/Chicago time: ${HOUR}:${MIN}, day-of-week: ${DOW}"
+          # Weekdays at 14:30
+          if [ "$DOW" -le 5 ] && [ "$HOUR" = "14" ] && [ "$MIN" = "30" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          # Weekends at 11:00
+          elif [ "$DOW" -ge 6 ] && [ "$HOUR" = "11" ] && [ "$MIN" = "00" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not the target Central Time — skipping this trigger."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  fetch:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install requests google-genai python-dateutil
+
+      - name: Fetch stories and extract events
+        env:
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+          APIFY_STORY_TASK_ID: ${{ vars.APIFY_STORY_TASK_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/fetch_instagram_stories.py
+
+      - name: Commit discovered.json if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- public/discovered.json; then
+            echo "No changes to public/discovered.json"
+            exit 0
+          fi
+          git add public/discovered.json
+          git commit -m "chore: merge Instagram story events [skip ci]"
+          git push origin HEAD:main
