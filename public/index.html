@@ -1579,7 +1579,7 @@ function syncDrafts(){
   });
 }
 const A={
-  sv:b=>{view=b.dataset.v;selDay=null;search='';detDate=null;jumpDate=null;akEdit=false;if(view==='discover'){discDate=todayISO();discWeekOff=0;}render();},
+  sv:b=>{view=b.dataset.v;selDay=null;search='';detDate=null;jumpDate=null;akEdit=false;if(view==='discover'){discDate=todayISO();discWeekOff=0;}if(view==='hh'){hhDay=todayDow();hhDetId=null;hhAddOpen=false;hhEditId=null;}render();},
   gsave:()=>{const v=(document.getElementById('gcid')?.value||'').trim();gClientId=v;gSaveCfg();gTokenClient=null;showToast(v?'Client ID saved ✓':'Client ID cleared');render();},
   gconn:()=>gConnect(),
   gdisc:()=>gDisconnect(),
