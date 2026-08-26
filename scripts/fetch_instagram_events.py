@@ -45,7 +45,7 @@ GEMINI_KEY    = os.environ.get("GEMINI_API_KEY", "").strip()
 
 GEMINI_ENDPOINT = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-2.0-flash:generateContent"
+    "gemini-1.5-flash:generateContent"
 )
 
 LOOKBACK_HOURS  = 48   # include posts this many hours old
