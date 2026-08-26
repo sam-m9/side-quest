@@ -125,10 +125,13 @@ GEMINI_SCHEMA = {
         "is_event": {
             "type": "BOOLEAN",
             "description": (
-                "True if this post announces a specific upcoming event "
-                "(concert, class, market, pop-up, festival, etc.) with a date, "
-                "OR a recurring happy hour / weekly special. "
-                "Lifestyle photos or completely undated/unscheduled content → false."
+                "True ONLY if ALL of these are satisfied: "
+                "(1) the post announces ONE specific named event or a recurring happy hour/weekly special, "
+                "(2) it includes a concrete date (day+month or relative like 'this Friday') OR is a recurring special, "
+                "(3) it includes a real venue name or address. "
+                "Set to FALSE for: roundup/listicle posts ('10 things to do', 'things to do in [month]', 'events this weekend' without a single specific event), "
+                "generic brand posts, lifestyle content, vague 'coming soon' without a date, "
+                "or posts that reference multiple unrelated events."
             ),
         },
         "is_happy_hour": {
@@ -211,6 +214,9 @@ GEMINI_SCHEMA = {
 _SYSTEM_PROMPT = (
     "You are an event detection assistant for Side Quest, an Austin TX events app. "
     "Analyze the Instagram post below and extract structured event data. "
+    "Set is_event=false for roundup posts ('things to do in [month]', '10 events this weekend', "
+    "'best places to...') — these list multiple things and do not describe a single specific event. "
+    "A valid event has ONE name, ONE date, and ONE venue. "
     "Pay special attention to happy hours: capture ALL deal lines (one per line in the deal field), "
     "the exact end time (e.g. '7:00 PM' from 'open-7pm'), and recurrence ('everyday' if EVERYDAY). "
     "Return JSON only — no markdown, no explanation.\n\n"
