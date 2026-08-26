@@ -5,6 +5,8 @@
   Cache-Control: no-cache
 /manifest.json
   Cache-Control: no-cache
+/discovered.json
+  Cache-Control: no-cache, no-store, must-revalidate
 
 # Icons rarely change — let them cache.
 /icons/*
