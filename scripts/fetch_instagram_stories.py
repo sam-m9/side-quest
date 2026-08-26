@@ -171,11 +171,10 @@ def fetch_apify_stories() -> list[dict]:
         return []
 
     run_id = _trigger_and_wait(APIFY_TASK_ID, APIFY_TOKEN)
-    if run_id:
-        url = APIFY_RUN_DATASET_URL.format(run_id=run_id, token=APIFY_TOKEN)
-    else:
-        log.warning("Falling back to last successful Apify run")
-        url = APIFY_DATASET_URL.format(task_id=APIFY_TASK_ID, token=APIFY_TOKEN)
+    if not run_id:
+        log.warning("Apify run did not succeed — skipping to avoid reprocessing old stories.")
+        return []
+    url = APIFY_RUN_DATASET_URL.format(run_id=run_id, token=APIFY_TOKEN)
 
     try:
         resp = requests.get(url, timeout=REQUEST_TIMEOUT)

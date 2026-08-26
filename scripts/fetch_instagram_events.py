@@ -114,19 +114,13 @@ def _trigger_and_wait(task_id: str, token: str,
 def fetch_apify_posts() -> list[dict]:
     """Trigger a fresh Apify run, wait for it, then return its posts."""
     run_id = _trigger_and_wait(APIFY_TASK_ID, APIFY_TOKEN)
-    if run_id:
-        url = (
-            f"https://api.apify.com/v2/actor-runs/{run_id}/dataset/items"
-            f"?token={APIFY_TOKEN}&limit={MAX_POSTS}&fields={_APIFY_DATASET_FIELDS}"
-        )
-    else:
-        log.warning("Falling back to last successful Apify run")
-        url = (
-            f"https://api.apify.com/v2/actor-tasks/{APIFY_TASK_ID}"
-            f"/runs/last/dataset/items"
-            f"?token={APIFY_TOKEN}&status=SUCCEEDED&limit={MAX_POSTS}"
-            f"&fields={_APIFY_DATASET_FIELDS}"
-        )
+    if not run_id:
+        log.warning("Apify run did not succeed — skipping to avoid reprocessing old posts.")
+        return []
+    url = (
+        f"https://api.apify.com/v2/actor-runs/{run_id}/dataset/items"
+        f"?token={APIFY_TOKEN}&limit={MAX_POSTS}&fields={_APIFY_DATASET_FIELDS}"
+    )
     try:
         resp = requests.get(url, timeout=30)
         resp.raise_for_status()
