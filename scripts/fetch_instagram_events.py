@@ -239,7 +239,8 @@ def _fetch_image_b64(url: str) -> tuple[str, str] | None:
 
 def gemini_classify(post: dict) -> dict | None:
     """Call Gemini 2.5 Flash; return extracted fields dict or None on failure."""
-    caption = (post.get("caption") or "").strip()
+    raw_caption = post.get("caption") or ""
+    caption = (raw_caption if isinstance(raw_caption, str) else str(raw_caption)).strip()
     if not caption:
         return None
 
