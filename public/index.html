@@ -384,8 +384,9 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-empty{padding:32px 0;text-align:center;color:#8a8372;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
 .hh-tf-row{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .hh-tf-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--taupe);margin-right:2px;}
-.hh-tf-pill{border:1px solid var(--rule);border-radius:20px;padding:4px 10px;font-size:12px;font-family:var(--mono);background:var(--surface);color:var(--taupe);cursor:pointer;letter-spacing:.04em;}
-.hh-tf-pill.on{background:var(--maroon);border-color:var(--maroon);color:#fff;}
+.hh-tf-select{border:1.5px solid var(--rule);border-radius:8px;padding:4px 8px;font-size:12px;font-family:var(--mono);background:var(--surface);color:var(--fg);cursor:pointer;letter-spacing:.04em;appearance:none;-webkit-appearance:none;padding-right:22px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8372'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;}
+.hh-tf-select.on{border-color:var(--maroon);color:var(--maroon);}
+.hh-nbhd{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--taupe);background:var(--rule);border-radius:4px;padding:2px 6px;margin-top:4px;}
 /* card */
 .hh-card{border:2.5px solid #17140F;border-radius:12px;box-shadow:3px 4px 0 #17140F;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#fff;display:flex;flex-direction:column}
 .hh-card.soon{border:2px solid #c8c1b4;box-shadow:none;opacity:.82}
@@ -727,7 +728,7 @@ function saveKey(){try{localStorage.setItem(AKK,apiKey);}catch{}}
 function loadHappyHours(){
   try{const s=localStorage.getItem(HH_KEY);happyHours=s?JSON.parse(s):[];}catch{happyHours=[];}
   try{
-    const SEED_VER='v3';
+    const SEED_VER='v4';
     const builtinById=new Map(BUILTIN_HH.map(h=>[h.id,h]));
     happyHours=happyHours.filter(h=>!h.id.startsWith('blt-')||builtinById.has(h.id));
     if(localStorage.getItem('sidequest-hh-seeded')!==SEED_VER){
@@ -1076,8 +1077,8 @@ function bHappyHours(){
   if(!hhDay)hhDay=todayDow();
   const strip=DOW_KEYS.map((d,i)=>`<button class="hh-dow${hhDay===d?' on':''}" data-a="hhd" data-d="${d}">${DOW_SHORT[i]}</button>`).join('');
   const addSlot=hhAddOpen?'':`<button class="hh-add-slot-hdr" data-a="hhop">+ Add</button>`;
-  const TF_PILLS=[['3pm','15:00'],['4pm','16:00'],['5pm','17:00'],['6pm','18:00'],['7pm','19:00'],['8pm','20:00']];
-  const timeFilterHtml=`<div class="hh-tf-row"><span class="hh-tf-lbl">After</span>${TF_PILLS.map(([lbl,val])=>`<button class="hh-tf-pill${hhTimeFilter===val?' on':''}" data-a="hhtf" data-t="${val}">${lbl}</button>`).join('')}</div>`;
+  const TF_OPTS=[['Any time',''],['After 3pm','15:00'],['After 4pm','16:00'],['After 5pm','17:00'],['After 6pm','18:00'],['After 7pm','19:00'],['After 8pm','20:00']];
+  const timeFilterHtml=`<div class="hh-tf-row"><select class="hh-tf-select${hhTimeFilter?' on':''}" data-a="hhtf-sel">${TF_OPTS.map(([lbl,val])=>`<option value="${val}"${hhTimeFilter===val?' selected':''}>${lbl}</option>`).join('')}</select></div>`;
   let formHtml='';
   if(hhAddOpen){
     const f=hhF;
@@ -1122,8 +1123,9 @@ function bHappyHours(){
       }
       const timeStr=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
       const dayLbl=hhDayLabel(h);
-      const metaStr=[timeStr,h.neighborhood||'',dayLbl].filter(Boolean).join(' · ');
-      return`<div class="${cardCls}" data-a="hhdv" data-id="${h.id}"><div class="hh-band" ${bandStyle}><div class="hh-band-left">${bandLeft}${bandUntil}</div><span class="hh-overflow">···</span></div><div class="hh-body"><div class="hh-body-main"><div class="hh-name">${esc(h.title)}</div>${metaStr?`<div class="hh-meta">${esc(metaStr)}</div>`:''}${hhChips(h,accent)}</div>${hhTimeBadge(h)}</div></div>`;
+      const metaStr=[timeStr,dayLbl].filter(Boolean).join(' · ');
+      const nbhdTag=h.neighborhood?`<div class="hh-nbhd">${esc(h.neighborhood)}</div>`:'';
+      return`<div class="${cardCls}" data-a="hhdv" data-id="${h.id}"><div class="hh-band" ${bandStyle}><div class="hh-band-left">${bandLeft}${bandUntil}</div><span class="hh-overflow">···</span></div><div class="hh-body"><div class="hh-body-main"><div class="hh-name">${esc(h.title)}</div>${nbhdTag}${metaStr?`<div class="hh-meta">${esc(metaStr)}</div>`:''}${hhChips(h,accent)}</div>${hhTimeBadge(h)}</div></div>`;
     }).join('');
   }else{
     cards=`<div class="hh-empty">No happy hours for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
@@ -1724,7 +1726,7 @@ const A={
   dcc:b=>{discCat=b.dataset.c;render();},
   dwk:b=>{const d=parseInt(b.dataset.dir,10);discWeekOff=Math.max(0,discWeekOff+d);render();},
   hhd:b=>{hhDay=b.dataset.d;render();},
-  hhtf:b=>{const t=b.dataset.t||'';hhTimeFilter=hhTimeFilter===t?'':t;render();},
+  'hhtf-sel':b=>{hhTimeFilter=b.value||'';render();},
   hhop:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};render();},
   hhcx:()=>{syncHHForm();hhAddOpen=false;hhEditId=null;hhF={};render();},
   hhtd:b=>{syncHHForm();const d=b.dataset.d,days=hhF.days||[];hhF={...hhF,days:days.includes(d)?days.filter(x=>x!==d):[...days,d]};render();},
@@ -1818,6 +1820,9 @@ const A={
 
 document.addEventListener('click',ev=>{
   try{const btn=ev.target.closest('[data-a]');if(!btn)return;ev.preventDefault();ev.stopPropagation();const fn=A[btn.dataset.a];if(fn)fn(btn);}catch(err){console.error('Click error:',err);}
+},true);
+document.addEventListener('change',ev=>{
+  try{const el=ev.target.closest('[data-a]');if(!el)return;const fn=A[el.dataset.a];if(fn)fn(el);}catch(err){console.error('Change error:',err);}
 },true);
 
 // Search with debounce
