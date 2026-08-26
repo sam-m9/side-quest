@@ -969,7 +969,7 @@ function bHappyHours(){
       const open=isToday&&isHHOpenNow(h);
       const soon=isToday&&!open&&hhOpensSoon(h);
       const cardCls=`hh-card${soon?' soon':''}`;
-      const bandBg=open||(!soon&&!open&&!isToday)?accent.c:'';
+      const bandBg=accent.c;
       const bandStyle=bandBg?`style="background:${bandBg}"`:'';
       let bandLeft='',bandUntil='';
       if(open){
