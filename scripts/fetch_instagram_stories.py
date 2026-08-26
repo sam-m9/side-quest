@@ -43,7 +43,7 @@ APIFY_DATASET_URL = (
 
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-2.5-flash:generateContent?key={key}"
+    "gemini-2.5-flash:generateContent"
 )
 
 REQUEST_TIMEOUT = 30
@@ -303,9 +303,13 @@ def call_gemini(bundles: list[dict]) -> list[dict]:
         },
     }
 
-    url = GEMINI_URL.format(key=GEMINI_KEY)
     try:
-        resp = requests.post(url, json=payload, timeout=60)
+        resp = requests.post(
+            GEMINI_URL,
+            headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
+            json=payload,
+            timeout=60,
+        )
         resp.raise_for_status()
         data = resp.json()
     except requests.RequestException as exc:

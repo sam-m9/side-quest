@@ -276,7 +276,8 @@ def gemini_classify(post: dict) -> dict | None:
 
     try:
         resp = requests.post(
-            f"{GEMINI_ENDPOINT}?key={GEMINI_KEY}",
+            GEMINI_ENDPOINT,
+            headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
             json=payload,
             timeout=60,
         )
