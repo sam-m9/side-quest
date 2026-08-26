@@ -30,7 +30,7 @@ jobs:
       - name: Fetch Instagram events
         env:
           APIFY_API_TOKEN:     ${{ secrets.APIFY_API_TOKEN }}
-          APIFY_ACTOR_TASK_ID: ${{ secrets.APIFY_ACTOR_TASK_ID }}
+          APIFY_ACTOR_TASK_ID: ${{ vars.APIFY_ACTOR_TASK_ID }}
           GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/fetch_instagram_events.py
 
