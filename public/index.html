@@ -381,10 +381,10 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-add-slot{flex:1;min-width:50px;height:36px;border:2px dashed #c8c1b4;border-radius:10px;background:transparent;color:#8a8372;font-family:var(--body);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.04em;text-transform:uppercase;padding:0;white-space:nowrap}
 .hh-list{padding:12px 22px;display:flex;flex-direction:column;gap:12px}
 .hh-empty{padding:32px 0;text-align:center;color:#8a8372;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
-.hh-tf-row{display:flex;align-items:center;gap:8px;padding:8px 16px 4px;}
-.hh-tf-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--taupe);}
-.hh-tf-input{border:1px solid var(--rule);border-radius:6px;padding:4px 8px;font-size:13px;background:var(--surface);color:var(--ink);outline:none;}
-.hh-tf-clear{background:none;border:none;cursor:pointer;color:var(--taupe);font-size:14px;padding:0 2px;}
+.hh-tf-row{display:flex;align-items:center;gap:6px;padding:8px 16px 4px;flex-wrap:wrap;}
+.hh-tf-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--taupe);margin-right:2px;}
+.hh-tf-pill{border:1px solid var(--rule);border-radius:20px;padding:4px 10px;font-size:12px;font-family:var(--mono);background:var(--surface);color:var(--taupe);cursor:pointer;letter-spacing:.04em;}
+.hh-tf-pill.on{background:var(--maroon);border-color:var(--maroon);color:#fff;}
 /* card */
 .hh-card{border:2.5px solid #17140F;border-radius:12px;box-shadow:3px 4px 0 #17140F;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#fff;display:flex;flex-direction:column}
 .hh-card.soon{border:2px solid #c8c1b4;box-shadow:none;opacity:.82}
@@ -510,7 +510,7 @@ const BUILTIN_HH=[
   {id:'blt-wu-chow',title:'Wu Chow',location:'Bar & Lounge',neighborhood:'Downtown Austin',timeStart:'16:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$2 soup · $4 eggrolls · $5 wontons · $7 chicken · $5 wine · $8 cocktails'},
   // South Austin
   {id:'blt-aba',title:'Aba',location:'Music Lane',neighborhood:'South Austin',timeStart:'16:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$5 beer · $7 wine · $9 cocktails · discounted dips & plates',notes:'Bar areas only'},
-  {id:'blt-black-sheep-lodge',title:'Black Sheep Lodge',location:'South Lamar Dog-Friendly Patio',neighborhood:'South Austin',timeStart:'11:00',timeEnd:'23:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'Rotating daily deals · Mon $2 off TX pints & liquor'},
+  {id:'blt-black-sheep-lodge',title:'Black Sheep Lodge',location:'South Lamar Dog-Friendly Patio',neighborhood:'South Austin',timeStart:'11:00',timeEnd:'23:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'Rotating daily deals',notes:'Mon: $2 off TX pints & liquor'},
   {id:'blt-cafe-no-se',title:'Café No Sé',location:'South Congress Hotel',neighborhood:'South Austin',timeStart:'15:00',timeEnd:'18:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'25% off shared bites · $2 off beer, wine, cocktails'},
   {id:'blt-easy-tiger-slamar',title:'Easy Tiger (S Lamar)',location:'Large Beer Garden, S Lamar',neighborhood:'South Austin',timeStart:'14:30',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$5 sausages, pretzels, bites, drafts, wine, cocktails'},
   {id:'blt-el-alma',title:'El Alma',location:'Rooftop Skyline Patio',neighborhood:'South Austin',timeStart:'15:00',timeEnd:'18:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$5 beer/sangria · $6–$7 margaritas · discounted apps'},
@@ -540,7 +540,7 @@ const BUILTIN_HH=[
   {id:'blt-colleens-kitchen',title:"Colleen's Kitchen",location:'Mueller',neighborhood:'East Austin',timeStart:'14:30',timeEnd:'18:30',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$6 snacks/biscuits · $4 beer · $7 cocktails/frozens · $8 wine'},
   {id:'blt-de-nada-cantina',title:'De Nada Cantina',location:'Nixtamal Masa Patio',neighborhood:'East Austin',timeStart:'15:30',timeEnd:'18:30',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$1 off apps & drinks',notes:'Mon all day; Menos Mon $12 3-course tasting'},
   {id:'blt-el-chile',title:'El Chilé',location:'Manor Rd',neighborhood:'East Austin',timeStart:'15:00',timeEnd:'17:30',days:['mon','tue','wed','thu','fri'],deal:'$3 off apps · $1 off beer · $2 off margs & cocktails'},
-  {id:'blt-haymaker',title:'Haymaker',location:'Manor Rd Sports Venue',neighborhood:'East Austin',timeStart:'11:00',timeEnd:'22:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'Mon: $2 off cocktails, $4 cans, $7 paper bags, $8 lunch boxes'},
+  {id:'blt-haymaker',title:'Haymaker',location:'Manor Rd Sports Venue',neighborhood:'East Austin',timeStart:'11:00',timeEnd:'22:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'',notes:'Mon: $2 off cocktails, $4 cans, $7 paper bags, $8 lunch boxes'},
   {id:'blt-hillside-farmacy',title:'Hillside Farmacy',location:'Restored 1950s Pharmacy',neighborhood:'East Austin',timeStart:'15:00',timeEnd:'17:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$3 chowder · $5 mac · $6 crab cakes · $1 off drinks',notes:'Mon 5pm–close 50% off oysters'},
   {id:'blt-hotel-vegas',title:'Hotel Vegas',location:'East 6th Live Venue & Patio',neighborhood:'East Austin',timeStart:'17:00',timeEnd:'19:00',days:['mon','tue','wed','thu','fri'],deal:'$2 Lone Star tallboys · $3 wells · $6 classic cocktails'},
   {id:'blt-il-brutto',title:'Il Brutto',location:'East Austin',neighborhood:'East Austin',timeStart:'16:00',timeEnd:'18:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'50% off cocktails, beer, wine by glass/bottle',notes:'2hr Arnold validation'},
@@ -588,7 +588,7 @@ const BUILTIN_HH=[
   {id:'blt-torchys',title:"Torchy's Tacos",location:'Lakeway & Metro Locations',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$1.50 off beer · $2 off margs & sips',notes:'Sa–Su all day $3.50 sips'},
   {id:'blt-tumble-22',title:'Tumble 22',location:'Lake Austin Hot Chicken',neighborhood:'North Austin',timeStart:'16:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$1 oysters · $3 pie · $4 apps/desserts/drafts · $5 chicken sandwich · $2 off wine'},
   {id:'blt-uchiko',title:'Uchiko',location:'Burnet Rd Lounge',neighborhood:'North Austin',timeStart:'16:00',timeEnd:'18:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$3 oysters/avocado nigiri/beer/sake · $6 bincho/wine · $9 bluefin',notes:'Lounge fills fast; $90.50 tasting for 2'},
-  {id:'blt-waterloo-ice-house',title:'Waterloo Ice House',location:'North Burnet Family Patio',neighborhood:'North Austin',timeStart:'11:00',timeEnd:'22:00',days:['mon','tue','wed','thu','fri'],deal:'Mon $3.50 drafts · Tue $4 drafts & catfish · Wed $1 off drinks / $6 wine · Thu 50¢ wings'},
+  {id:'blt-waterloo-ice-house',title:'Waterloo Ice House',location:'North Burnet Family Patio',neighborhood:'North Austin',timeStart:'11:00',timeEnd:'22:00',days:['mon','tue','wed','thu','fri'],deal:'',notes:'Mon $3.50 drafts · Tue $4 drafts & catfish · Wed $1 off drinks / $6 wine · Thu 50¢ wings'},
 ];
 const DOW_KEYS=['sun','mon','tue','wed','thu','fri','sat'];
 const DOW_SHORT=['S','M','T','W','T','F','S'];
@@ -1074,8 +1074,8 @@ function bHappyHours(){
   if(!hhDay)hhDay=todayDow();
   const strip=DOW_KEYS.map((d,i)=>`<button class="hh-dow${hhDay===d?' on':''}" data-a="hhd" data-d="${d}">${DOW_SHORT[i]}</button>`).join('');
   const addSlot=hhAddOpen?'':`<button class="hh-add-slot" data-a="hhop">+ Add</button>`;
-  const tfClear=hhTimeFilter?`<button class="hh-tf-clear" data-a="hhclrtf">✕</button>`:'';
-  const timeFilterHtml=`<div class="hh-tf-row"><span class="hh-tf-lbl">After</span><input class="hh-tf-input" type="time" id="hh-time-filter" data-a="hhtf" value="${esc(hhTimeFilter)}">${tfClear}</div>`;
+  const TF_PILLS=[['3pm','15:00'],['4pm','16:00'],['5pm','17:00'],['6pm','18:00'],['7pm','19:00'],['8pm','20:00']];
+  const timeFilterHtml=`<div class="hh-tf-row"><span class="hh-tf-lbl">After</span>${TF_PILLS.map(([lbl,val])=>`<button class="hh-tf-pill${hhTimeFilter===val?' on':''}" data-a="hhtf" data-t="${val}">${lbl}</button>`).join('')}</div>`;
   let formHtml='';
   if(hhAddOpen){
     const f=hhF;
@@ -1722,8 +1722,7 @@ const A={
   dcc:b=>{discCat=b.dataset.c;render();},
   dwk:b=>{const d=parseInt(b.dataset.dir,10);discWeekOff=Math.max(0,discWeekOff+d);render();},
   hhd:b=>{hhDay=b.dataset.d;render();},
-  hhtf:()=>{const v=document.getElementById('hh-time-filter');if(v){hhTimeFilter=v.value||'';render();}},
-  hhclrtf:()=>{hhTimeFilter='';render();},
+  hhtf:b=>{const t=b.dataset.t||'';hhTimeFilter=hhTimeFilter===t?'':t;render();},
   hhop:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};render();},
   hhcx:()=>{syncHHForm();hhAddOpen=false;hhEditId=null;hhF={};render();},
   hhtd:b=>{syncHHForm();const d=b.dataset.d,days=hhF.days||[];hhF={...hhF,days:days.includes(d)?days.filter(x=>x!==d):[...days,d]};render();},
