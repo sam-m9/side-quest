@@ -381,6 +381,10 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-add-slot{flex:1;min-width:50px;height:36px;border:2px dashed #c8c1b4;border-radius:10px;background:transparent;color:#8a8372;font-family:var(--body);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.04em;text-transform:uppercase;padding:0;white-space:nowrap}
 .hh-list{padding:12px 22px;display:flex;flex-direction:column;gap:12px}
 .hh-empty{padding:32px 0;text-align:center;color:#8a8372;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.hh-tf-row{display:flex;align-items:center;gap:8px;padding:8px 16px 4px;}
+.hh-tf-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--taupe);}
+.hh-tf-input{border:1px solid var(--rule);border-radius:6px;padding:4px 8px;font-size:13px;background:var(--surface);color:var(--ink);outline:none;}
+.hh-tf-clear{background:none;border:none;cursor:pointer;color:var(--taupe);font-size:14px;padding:0 2px;}
 /* card */
 .hh-card{border:2.5px solid #17140F;border-radius:12px;box-shadow:3px 4px 0 #17140F;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#fff;display:flex;flex-direction:column}
 .hh-card.soon{border:2px solid #c8c1b4;box-shadow:none;opacity:.82}
@@ -563,7 +567,6 @@ const BUILTIN_HH=[
   {id:'blt-better-half',title:'Better Half',location:'West 5th Dog-Friendly Patio',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:00',days:['tue','wed','thu','fri'],deal:'$6 burgers · $3.50 High Life · $4 Kölsch · $6 sangria'},
   {id:'blt-clarks-oyster-bar',title:"Clark's Oyster Bar",location:'Clarksville Seafood Bistro',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'17:00',days:['mon','tue','wed','thu','fri','sat','sun'],deal:'$0.50 off oysters · $5 shooters/beer',notes:'Weekdays 50% off burgers & martinis'},
   {id:'blt-crown-anchor',title:'Crown & Anchor Pub',location:'UT Campus Tavern Est. 1972',neighborhood:'North Austin',timeStart:'14:00',timeEnd:'19:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$1 off drafts · $4 cans / $4.50 pints / $17.50 pitchers',notes:'Sun $5 Guinness'},
-  {id:'blt-easy-tiger-linc',title:'Easy Tiger (Lincoln)',location:'North Central Beer Garden',neighborhood:'North Austin',timeStart:'16:30',timeEnd:'18:30',days:['mon','tue','wed','thu','fri'],deal:'$3 pretzels · $5 sausages · $4 beer · $5 cocktails/wine · $10 pitchers'},
   {id:'blt-foreign-domestic',title:'Foreign & Domestic',location:'North Loop',neighborhood:'North Austin',timeStart:'17:00',timeEnd:'18:00',days:['wed','thu','fri','sat'],deal:'50% off small plates, Austin craft beers, wine by glass'},
   {id:'blt-hanks',title:"Hank's",location:'Mueller Wrap-Around Patio',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:30',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$3 off apps · $8 tap wine · $9 cocktails · $1 off beer',notes:'Mon 50% off burgers; Tue 50% off wine btls'},
   {id:'blt-jack-allens',title:"Jack Allen's Kitchen",location:'Anderson Ln Texas Kitchen',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:30',days:['mon','tue','wed','thu','fri'],deal:'50% off appetizers · $1 off all drinks'},
@@ -572,13 +575,10 @@ const BUILTIN_HH=[
   {id:'blt-kerbey-lane',title:'Kerbey Lane Cafe',location:'Central, 183 & S Lamar',neighborhood:'North Austin',timeStart:'16:00',timeEnd:'18:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$3 mimosas · $5 beers · $7 cocktails · $10 carafes'},
   {id:'blt-lalas',title:"Lala's",location:'Justin Ln Christmas Bar',neighborhood:'North Austin',timeStart:'16:00',timeEnd:'19:00',days:['mon','tue','wed','thu','fri'],deal:'$3 domestic bottles, Lone Star tallboys, wells'},
   {id:'blt-las-palomas',title:'Las Palomas',location:'West Lake Hills Center',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:30',days:['tue','wed','thu','fri'],deal:'$2 off apps · $2 off margs & wine'},
-  {id:'blt-lavaca-domain',title:'Lavaca St Bar (Domain)',location:'Rock Rose Sports Bar',neighborhood:'North Austin',timeStart:'16:00',timeEnd:'18:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$3 mimosas · $5 beers · $7 cocktails · $10 carafes'},
-  {id:'blt-lazarus-airport',title:'Lazarus Brewing (Airport)',location:'North Austin',neighborhood:'North Austin',timeStart:'16:00',timeEnd:'18:00',days:['mon','tue','wed','thu'],deal:'$2 tostadas · $2 off entrees >$10 · $2 lager · $2 off drinks'},
   {id:'blt-los-pinos',title:'Los Pinos',location:'Bee Cave Rd Shaded Patio',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$2.75 domestic · $2.99 imports · $4.99 margs · $7.75 tequila shots'},
   {id:'blt-mongers-market',title:'Mongers Market & Kitchen',location:'Central Guadalupe Seafood',neighborhood:'North Austin',timeStart:'16:00',timeEnd:'18:00',days:['tue','wed','thu','fri'],deal:'$1 off oysters/drafts · $6 seafood snacks · $2 off wine/carafes · $5 bubbles/sangria'},
   {id:'blt-moodys',title:"Moody's",location:'North Austin, Free UT Lot',neighborhood:'North Austin',timeStart:'17:00',timeEnd:'19:00',days:['mon','tue','wed','thu','fri'],deal:'$2 off tenders/pretzels · $8 queso & salsa · $1 off beer · $4 White Claws · $8 cocktails'},
   {id:'blt-oasthouse',title:'Oasthouse',location:'NW Austin FM 620',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri','sat'],deal:'$5–$7 treats · $1 off beer · $5–$6 libations · 50% off featured wine btls'},
-  {id:'blt-postino-bryker',title:'Postino (Bryker)',location:'Central Shaded Patio',neighborhood:'North Austin',timeStart:'11:00',timeEnd:'17:00',days:['sun','mon','tue','wed','thu','fri','sat'],deal:'$6 wine glasses (all varieties) · $6 beer pitchers'},
   {id:'blt-punch-bowl-social',title:'Punch Bowl Social',location:'The Domain Tech Hub',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$5–$10 bites · $5 drafts, wine, cocktails, punch · 50% off bowling'},
   {id:'blt-ramen-tatsuya',title:'Ramen Tatsu-ya',location:'Guadalupe & Metro Sites',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'17:00',days:['mon','tue','wed','thu','fri'],deal:'$5 munchies · $4 slushies/beers/NA · $2 off cocktails & wine',notes:'Mon all day'},
   {id:'blt-shore-raw-bar',title:'Shore Raw Bar',location:'Hwy 71 Coastal Raw Bar',neighborhood:'North Austin',timeStart:'15:00',timeEnd:'18:00',days:['mon','tue','wed','thu','fri'],deal:'$0.50 off oysters · $3 off raw bar & light bites · $2 off drinks'},
@@ -611,7 +611,7 @@ let lightboxSrc=null;
 let toastTm=null,rafId=null;
 let gridOpen=false,jumpDate=null,detDate=null;
 let discovered=[],dismissed=[],discDate='',discCat='all',discWeekOff=0;
-let happyHours=[],hhDay='',hhAddOpen=false,hhEditId=null,hhF={},hhDetId=null;
+let happyHours=[],hhDay='',hhAddOpen=false,hhEditId=null,hhF={},hhDetId=null,hhTimeFilter='';
 let gClientId='',gToken='',gTokenClient=null,gDriveFileId=null,gSync='off',gSyncTimer=null,gBackupFolderId=null;
 
 // UTILS
@@ -726,7 +726,9 @@ function saveKey(){try{localStorage.setItem(AKK,apiKey);}catch{}}
 function loadHappyHours(){
   try{const s=localStorage.getItem(HH_KEY);happyHours=s?JSON.parse(s):[];}catch{happyHours=[];}
   try{
-    const SEED_VER='v1';
+    const SEED_VER='v2';
+    const builtinIds=new Set(BUILTIN_HH.map(h=>h.id));
+    happyHours=happyHours.filter(h=>!h.id.startsWith('blt-')||builtinIds.has(h.id));
     if(localStorage.getItem('sidequest-hh-seeded')!==SEED_VER){
       const existIds=new Set(happyHours.map(h=>h.id));
       BUILTIN_HH.forEach(h=>{if(!existIds.has(h.id))happyHours.push({...h,addedAt:new Date().toISOString()});});
@@ -1072,6 +1074,8 @@ function bHappyHours(){
   if(!hhDay)hhDay=todayDow();
   const strip=DOW_KEYS.map((d,i)=>`<button class="hh-dow${hhDay===d?' on':''}" data-a="hhd" data-d="${d}">${DOW_SHORT[i]}</button>`).join('');
   const addSlot=hhAddOpen?'':`<button class="hh-add-slot" data-a="hhop">+ Add</button>`;
+  const tfClear=hhTimeFilter?`<button class="hh-tf-clear" data-a="hhclrtf">✕</button>`:'';
+  const timeFilterHtml=`<div class="hh-tf-row"><span class="hh-tf-lbl">After</span><input class="hh-tf-input" type="time" id="hh-time-filter" data-a="hhtf" value="${esc(hhTimeFilter)}">${tfClear}</div>`;
   let formHtml='';
   if(hhAddOpen){
     const f=hhF;
@@ -1080,7 +1084,8 @@ function bHappyHours(){
     const alsoOn=existingForDay.length?`<div class="hh-also"><div class="hh-also-lbl">Also on ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]}</div>${existingForDay.map(h=>{const t=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join('–');return`<div class="hh-also-row"><span class="hh-also-name">${esc(h.title)}</span>${t?`<span class="hh-also-time">${esc(t)}</span>`:''}</div>`;}).join('')}</div>`:'';
     formHtml=`<div class="hh-form">${alsoOn}<div class="hh-form-ttl">${hhEditId?'Edit Happy Hour':'New Happy Hour'}</div><div class="hh-form-row"><div class="hh-label">Name</div><input class="fi" id="hhf-name" type="text" placeholder="Bar or restaurant name" value="${esc(f.title||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Location</div><input class="fi" id="hhf-loc" type="text" placeholder="Address or neighborhood" value="${esc(f.location||'')}" autocomplete="off"></div><div class="hh-form-row"><div class="hh-label">Hours</div><div class="hh-time-row"><div class="hh-time-field"><div class="hh-time-lbl">Start</div><input class="fi" id="hhf-ts" type="time" value="${esc(f.timeStart||'17:00')}"></div><div class="hh-time-field"><div class="hh-time-lbl">End</div><input class="fi" id="hhf-te" type="time" value="${esc(f.timeEnd||'19:00')}"></div></div></div><div class="hh-form-row"><div class="hh-label">Days it recurs</div><div class="hh-dow-row">${dayChecks}</div></div><div class="hh-form-row"><div class="hh-label">Deal / specials</div><textarea class="fi" id="hhf-deal" rows="3" placeholder="$7 martinis&#10;$5 apps/snacks&#10;$10 burger" style="resize:vertical;min-height:64px">${esc(f.deal||'')}</textarea></div><div class="hh-form-row"><div class="hh-label">Link (optional)</div><input class="fi" id="hhf-link" type="url" placeholder="https://…" value="${esc(f.link||'')}" autocomplete="off"></div><div class="ak-btns"><button class="btn-p" data-a="hhsv">Save</button><button class="btn-s" data-a="hhcx" style="width:auto;white-space:nowrap">Cancel</button></div></div>`;
   }
-  const list=hhForDow(hhDay);
+  let list=hhForDow(hhDay);
+  if(hhTimeFilter)list=list.filter(h=>(h.timeEnd||'23:59')>hhTimeFilter);
   const isToday=hhDay===todayDow();
   const openCount=isToday?list.filter(h=>isHHOpenNow(h)).length:0;
   const openLabel=openCount>0?`<div class="hh-open-count"><span class="hh-open-dot"></span>${openCount} OPEN NOW</div>`:'';
@@ -1092,7 +1097,7 @@ function bHappyHours(){
       if(ao!==bo)return ao?-1:1;
       const as=!ao&&isToday&&hhOpensSoon(a),bs=!bo&&isToday&&hhOpensSoon(b);
       if(as!==bs)return as?-1:1;
-      return 0;
+      return (a.timeStart||'').localeCompare(b.timeStart||'');
     });
     cards=sorted.map(h=>{
       const accent=hhAccent(h);
@@ -1121,7 +1126,7 @@ function bHappyHours(){
   }else{
     cards=`<div class="hh-empty">No happy hours for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
   }
-  return`<div class="hh-wrap"><div class="hh-hdr-row"><div class="hh-hdr-title">Happy Hours</div>${openLabel}</div><div class="hh-dow-strip">${strip}${addSlot}</div>${formHtml}<div class="hh-list">${cards}</div></div>`;
+  return`<div class="hh-wrap"><div class="hh-hdr-row"><div class="hh-hdr-title">Happy Hours</div>${openLabel}</div><div class="hh-dow-strip">${strip}${addSlot}</div>${timeFilterHtml}${formHtml}<div class="hh-list">${cards}</div></div>`;
 }
 function bHHDetail(h){
   const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
@@ -1717,6 +1722,8 @@ const A={
   dcc:b=>{discCat=b.dataset.c;render();},
   dwk:b=>{const d=parseInt(b.dataset.dir,10);discWeekOff=Math.max(0,discWeekOff+d);render();},
   hhd:b=>{hhDay=b.dataset.d;render();},
+  hhtf:()=>{const v=document.getElementById('hh-time-filter');if(v){hhTimeFilter=v.value||'';render();}},
+  hhclrtf:()=>{hhTimeFilter='';render();},
   hhop:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};render();},
   hhcx:()=>{syncHHForm();hhAddOpen=false;hhEditId=null;hhF={};render();},
   hhtd:b=>{syncHHForm();const d=b.dataset.d,days=hhF.days||[];hhF={...hhF,days:days.includes(d)?days.filter(x=>x!==d):[...days,d]};render();},
