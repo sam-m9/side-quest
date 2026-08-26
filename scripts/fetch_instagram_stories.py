@@ -36,9 +36,14 @@ APIFY_TOKEN = os.environ.get("APIFY_API_TOKEN", "").strip()
 APIFY_TASK_ID = os.environ.get("APIFY_STORY_TASK_ID", "").strip()
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
+APIFY_RUN_URL     = "https://api.apify.com/v2/actor-tasks/{task_id}/runs?token={token}"
+APIFY_STATUS_URL  = "https://api.apify.com/v2/actor-runs/{run_id}?token={token}"
 APIFY_DATASET_URL = (
     "https://api.apify.com/v2/actor-tasks/{task_id}/runs/last/dataset/items"
     "?token={token}&status=SUCCEEDED"
+)
+APIFY_RUN_DATASET_URL = (
+    "https://api.apify.com/v2/actor-runs/{run_id}/dataset/items?token={token}"
 )
 
 GEMINI_URL = (
@@ -123,13 +128,55 @@ def categorize(*texts: str) -> str:
 # Step 1: Fetch Apify dataset
 # --------------------------------------------------------------------------- #
 
+def _trigger_and_wait(task_id: str, token: str,
+                      timeout_s: int = 600, poll_s: int = 15) -> str | None:
+    """Start one Apify task run, poll until done, return run_id or None."""
+    start_url = APIFY_RUN_URL.format(task_id=task_id, token=token)
+    try:
+        resp = requests.post(start_url, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        run_id = (resp.json().get("data") or {}).get("id")
+        log.info("Started Apify run %s", run_id)
+    except requests.RequestException as exc:
+        log.error("Could not start Apify run: %s", exc)
+        return None
+
+    if not run_id:
+        log.error("No run ID returned by Apify")
+        return None
+
+    status_url = APIFY_STATUS_URL.format(run_id=run_id, token=token)
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        time.sleep(poll_s)
+        try:
+            status = requests.get(status_url, timeout=REQUEST_TIMEOUT).json().get("data", {}).get("status", "")
+            log.info("Apify run %s → %s", run_id, status)
+            if status == "SUCCEEDED":
+                return run_id
+            if status in ("FAILED", "TIMED-OUT", "ABORTING", "ABORTED"):
+                log.error("Apify run ended with status %s — falling back to last run", status)
+                return None
+        except requests.RequestException as exc:
+            log.warning("Poll error: %s", exc)
+
+    log.error("Apify run timed out after %ds", timeout_s)
+    return None
+
+
 def fetch_apify_stories() -> list[dict]:
-    """Return raw story items from the last successful Apify run."""
+    """Trigger a fresh Apify run, wait for it, then return its story items."""
     if not APIFY_TOKEN or not APIFY_TASK_ID:
         log.error("APIFY_API_TOKEN or APIFY_STORY_TASK_ID not set — aborting")
         return []
 
-    url = APIFY_DATASET_URL.format(task_id=APIFY_TASK_ID, token=APIFY_TOKEN)
+    run_id = _trigger_and_wait(APIFY_TASK_ID, APIFY_TOKEN)
+    if run_id:
+        url = APIFY_RUN_DATASET_URL.format(run_id=run_id, token=APIFY_TOKEN)
+    else:
+        log.warning("Falling back to last successful Apify run")
+        url = APIFY_DATASET_URL.format(task_id=APIFY_TASK_ID, token=APIFY_TOKEN)
+
     try:
         resp = requests.get(url, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()

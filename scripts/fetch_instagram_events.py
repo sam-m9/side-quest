@@ -69,15 +69,64 @@ log = logging.getLogger("ig_events")
 # Apify helpers
 # --------------------------------------------------------------------------- #
 
+_APIFY_DATASET_FIELDS = (
+    "shortCode,id,caption,displayUrl,timestamp,"
+    "takenAtTimestamp,url,ownerUsername,images"
+)
+
+
+def _trigger_and_wait(task_id: str, token: str,
+                      timeout_s: int = 600, poll_s: int = 15) -> str | None:
+    """Start one Apify task run, poll until done, return run_id or None."""
+    start_url = f"https://api.apify.com/v2/actor-tasks/{task_id}/runs?token={token}"
+    try:
+        resp = requests.post(start_url, timeout=30)
+        resp.raise_for_status()
+        run_id = (resp.json().get("data") or {}).get("id")
+        log.info("Started Apify run %s", run_id)
+    except requests.RequestException as exc:
+        log.error("Could not start Apify run: %s", exc)
+        return None
+
+    if not run_id:
+        log.error("No run ID returned by Apify")
+        return None
+
+    status_url = f"https://api.apify.com/v2/actor-runs/{run_id}?token={token}"
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        time.sleep(poll_s)
+        try:
+            status = requests.get(status_url, timeout=30).json().get("data", {}).get("status", "")
+            log.info("Apify run %s → %s", run_id, status)
+            if status == "SUCCEEDED":
+                return run_id
+            if status in ("FAILED", "TIMED-OUT", "ABORTING", "ABORTED"):
+                log.error("Apify run ended with status %s — falling back to last run", status)
+                return None
+        except requests.RequestException as exc:
+            log.warning("Poll error: %s", exc)
+
+    log.error("Apify run timed out after %ds", timeout_s)
+    return None
+
+
 def fetch_apify_posts() -> list[dict]:
-    """Return posts from the last successful run of the configured Apify task."""
-    url = (
-        f"https://api.apify.com/v2/actor-tasks/{APIFY_TASK_ID}"
-        f"/runs/last/dataset/items"
-        f"?token={APIFY_TOKEN}&status=SUCCEEDED&limit={MAX_POSTS}"
-        f"&fields=shortCode,id,caption,displayUrl,timestamp,"
-        f"takenAtTimestamp,url,ownerUsername,images"
-    )
+    """Trigger a fresh Apify run, wait for it, then return its posts."""
+    run_id = _trigger_and_wait(APIFY_TASK_ID, APIFY_TOKEN)
+    if run_id:
+        url = (
+            f"https://api.apify.com/v2/actor-runs/{run_id}/dataset/items"
+            f"?token={APIFY_TOKEN}&limit={MAX_POSTS}&fields={_APIFY_DATASET_FIELDS}"
+        )
+    else:
+        log.warning("Falling back to last successful Apify run")
+        url = (
+            f"https://api.apify.com/v2/actor-tasks/{APIFY_TASK_ID}"
+            f"/runs/last/dataset/items"
+            f"?token={APIFY_TOKEN}&status=SUCCEEDED&limit={MAX_POSTS}"
+            f"&fields={_APIFY_DATASET_FIELDS}"
+        )
     try:
         resp = requests.get(url, timeout=30)
         resp.raise_for_status()
@@ -85,7 +134,7 @@ def fetch_apify_posts() -> list[dict]:
         log.info("Apify returned %d posts total", len(posts))
         return posts if isinstance(posts, list) else []
     except requests.RequestException as exc:
-        log.error("Apify fetch failed: %s", exc)
+        log.error("Apify dataset fetch failed: %s", exc)
         return []
 
 
