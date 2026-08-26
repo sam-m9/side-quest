@@ -335,9 +335,14 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;z-index:1000;white-space:nowrap;pointer-events:none;transition:opacity .3s}
 /* ---- Discover tab ---- */
 .disc-wrap{display:flex;flex-direction:column;min-height:0}
-.disc-daystrip{display:flex;gap:5px;padding:10px 22px 4px;flex-shrink:0}
-.disc-day{flex:1;border-radius:10px;border:2px solid #d4cdbf;padding:8px 0;text-align:center;font-family:var(--body);font-weight:800;font-size:13px;line-height:1;color:#a39b88;background:var(--paper);cursor:pointer}
-.disc-day.on{border:2.5px solid #17140F;background:#17140F;box-shadow:2px 3px 0 #a39b88;color:#F6F1E7}
+.disc-daystrip{display:flex;align-items:center;gap:4px;padding:10px 14px 4px;flex-shrink:0}
+.disc-week-nav{flex-shrink:0;width:28px;height:50px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#a39b88;background:none;border:none;cursor:pointer;padding:0}
+.disc-week-nav:disabled{opacity:0.25;cursor:default}
+.disc-day{flex:1;border-radius:10px;border:2px solid #d4cdbf;padding:7px 0 6px;text-align:center;font-family:var(--body);cursor:pointer;background:var(--paper);display:flex;flex-direction:column;align-items:center;gap:2px}
+.disc-day-ltr{font-weight:800;font-size:12px;line-height:1;color:#a39b88}
+.disc-day-num{font-weight:700;font-size:11px;line-height:1;color:#a39b88}
+.disc-day.on{border:2.5px solid #17140F;background:#17140F;box-shadow:2px 3px 0 #a39b88}
+.disc-day.on .disc-day-ltr,.disc-day.on .disc-day-num{color:#F6F1E7}
 .disc-pills{display:flex;gap:7px;padding:8px 22px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0}
 .disc-pill{flex:0 0 auto;font-family:var(--body);font-weight:700;font-size:12px;line-height:1;padding:7px 14px;border-radius:100px;border:2px solid #17140F;background:#fff;color:#17140F;cursor:pointer;white-space:nowrap}
 .disc-pill.on{background:#17140F;color:#fff}
@@ -486,7 +491,7 @@ let imgData=null,loading=false,parsed=null,parsedList=null,addErr='';
 let lightboxSrc=null;
 let toastTm=null,rafId=null;
 let gridOpen=false,jumpDate=null,detDate=null;
-let discovered=[],dismissed=[],discDate='',discCat='all';
+let discovered=[],dismissed=[],discDate='',discCat='all',discWeekOff=0;
 let happyHours=[],hhDay='',hhAddOpen=false,hhEditId=null,hhF={},hhDetId=null;
 let gClientId='',gToken='',gTokenClient=null,gDriveFileId=null,gSync='off',gSyncTimer=null,gBackupFolderId=null;
 
@@ -831,14 +836,19 @@ function discRecurLabel(e){if(!e.isRecurring)return'';const t=(e.recurringType||
 function discSourceHandle(e){const m=(e.notes||'').match(/@([\w.]+)/);return m?`via @${m[1]}`:''}
 function bDiscover(){
   if(!discDate)discDate=todayISO();
-  // Build 7-day DOW strip (next 7 calendar days)
+  // Build 7-day DOW strip offset by discWeekOff weeks
   const base=new Date();base.setHours(0,0,0,0);
+  base.setDate(base.getDate()+discWeekOff*7);
   const DOW_LTR=['S','M','T','W','T','F','S'];
+  const MON_ABB=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const weekDays=[];
-  for(let i=0;i<7;i++){const d=new Date(base);d.setDate(base.getDate()+i);const iso=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;weekDays.push({iso,ltr:DOW_LTR[d.getDay()]});}
-  // Default discDate to today if it falls outside the 7-day window
+  for(let i=0;i<7;i++){const d=new Date(base);d.setDate(base.getDate()+i);const iso=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;weekDays.push({iso,ltr:DOW_LTR[d.getDay()],num:d.getDate(),mon:MON_ABB[d.getMonth()]});}
+  // Default discDate to first day of week if outside window
   if(!weekDays.some(d=>d.iso===discDate))discDate=weekDays[0].iso;
-  const strip=weekDays.map(d=>`<button class="disc-day${discDate===d.iso?' on':''}" data-a="dcd" data-d="${d.iso}">${d.ltr}</button>`).join('');
+  const prevDis=discWeekOff<=0?' disabled':'';
+  const navL=`<button class="disc-week-nav" data-a="dwk" data-dir="-1"${prevDis}>‹</button>`;
+  const navR=`<button class="disc-week-nav" data-a="dwk" data-dir="1">›</button>`;
+  const strip=weekDays.map(d=>`<button class="disc-day${discDate===d.iso?' on':''}" data-a="dcd" data-d="${d.iso}"><span class="disc-day-ltr">${d.ltr}</span><span class="disc-day-num">${d.num}</span></button>`).join('');
   const pills=['all',...CATK].map(c=>{const lab=c==='all'?'All':(CAT[c]?.l||c);return `<button class="disc-pill${discCat===c?' on':''}" data-a="dcc" data-c="${c}">${lab}</button>`;}).join('');
   const items=discForDate(discDate);
   const cards=items.map(e=>{
@@ -863,7 +873,7 @@ function bDiscover(){
     return `<div class="disc-card" data-id="${e.id}">${band}<div class="dc-body"><div class="dc-name">${esc(e.title)}</div>${locLine}${chipsHtml}</div>${actions}</div>`;
   }).join('');
   const empty=`<div class="empty"><div class="empty-rule"></div><div class="empty-t">Nothing new for ${fmtD(discDate)}</div><div class="empty-s">Try another day or check back tomorrow — fresh finds land daily.</div></div>`;
-  return `<div class="disc-wrap"><div class="disc-daystrip">${strip}</div><div class="disc-pills">${pills}</div><div class="disc-list">${cards||empty}</div></div>`;
+  return `<div class="disc-wrap"><div class="disc-daystrip">${navL}${strip}${navR}</div><div class="disc-pills">${pills}</div><div class="disc-list">${cards||empty}</div></div>`;
 }
 
 // ---- HAPPY HOURS ----
@@ -1574,6 +1584,7 @@ const A={
   gdisc:()=>gDisconnect(),
   dcd:b=>{discDate=b.dataset.d;render();},
   dcc:b=>{discCat=b.dataset.c;render();},
+  dwk:b=>{const d=parseInt(b.dataset.dir,10);discWeekOff=Math.max(0,discWeekOff+d);render();},
   hhd:b=>{hhDay=b.dataset.d;render();},
   hhop:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};render();},
   hhcx:()=>{syncHHForm();hhAddOpen=false;hhEditId=null;hhF={};render();},
