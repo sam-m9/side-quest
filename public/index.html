@@ -836,9 +836,10 @@ function discRecurLabel(e){if(!e.isRecurring)return'';const t=(e.recurringType||
 function discSourceHandle(e){const m=(e.notes||'').match(/@([\w.]+)/);return m?`via @${m[1]}`:''}
 function bDiscover(){
   if(!discDate)discDate=todayISO();
-  // Build 7-day DOW strip offset by discWeekOff weeks
-  const base=new Date();base.setHours(0,0,0,0);
-  base.setDate(base.getDate()+discWeekOff*7);
+  // Build Mon–Sun week strip offset by discWeekOff weeks
+  const today=new Date();today.setHours(0,0,0,0);
+  const dow=today.getDay();const daysToMon=(dow===0?-6:1-dow);
+  const base=new Date(today);base.setDate(today.getDate()+daysToMon+discWeekOff*7);
   const DOW_LTR=['S','M','T','W','T','F','S'];
   const MON_ABB=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const weekDays=[];
