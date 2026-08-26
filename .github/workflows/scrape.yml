@@ -57,15 +57,6 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run scraper (Do512 + 365 Things Austin)
-        env:
-          RSS_BRIDGE_BASE: ${{ vars.RSS_BRIDGE_BASE }}
-          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
-        run: python scripts/scrape_austin.py
-
-      - name: Install Instagram posts dependencies
         run: pip install requests python-dateutil
 
       - name: Fetch Instagram posts via Apify + Gemini
