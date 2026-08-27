@@ -375,7 +375,8 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-hdr-title{font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:-.02em;color:var(--ink)}
 .hh-open-count{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#12B36A;display:flex;align-items:center;gap:5px}
 .hh-open-dot{width:7px;height:7px;border-radius:50%;background:#12B36A;flex-shrink:0;display:inline-block}
-.hh-dow-strip{display:flex;gap:6px;padding:0 22px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;align-items:center}
+.hh-strip-row{display:flex;align-items:center;gap:8px;padding:0 22px 14px;flex-shrink:0}
+.hh-dow-strip{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;min-width:0;align-items:center}
 .hh-dow{width:36px;height:36px;min-width:36px;border:2px solid #d4cdbf;border-radius:10px;background:var(--panel);color:#8a8372;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;letter-spacing:0}
 .hh-dow.on{background:#17140F;border:2.5px solid #17140F;color:#F6F1E7;box-shadow:2px 3px 0 #a39b88}
 .hh-add-slot{flex:1;min-width:50px;height:36px;border:2px dashed #c8c1b4;border-radius:10px;background:transparent;color:#8a8372;font-family:var(--body);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.04em;text-transform:uppercase;padding:0;white-space:nowrap}
@@ -386,7 +387,8 @@ select.fi{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-trans
 .hh-tf-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--taupe);margin-right:2px;}
 .hh-tf-select{border:1.5px solid var(--rule);border-radius:8px;padding:3px 22px 3px 8px;font-size:11px;font-family:var(--mono);background:var(--surface);color:var(--taupe);cursor:pointer;letter-spacing:.04em;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%238a8372'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;}
 .hh-tf-select.on{border-color:var(--maroon);color:var(--maroon);}
-.hh-nbhd{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--taupe);background:var(--rule);border-radius:4px;padding:2px 6px;margin-top:4px;}
+.hh-band-nbhd{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.8);flex-shrink:0;padding-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.hh-card.soon .hh-band-nbhd{color:#8a8372}
 /* card */
 .hh-card{border:2.5px solid #17140F;border-radius:12px;box-shadow:3px 4px 0 #17140F;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#fff;display:flex;flex-direction:column}
 .hh-card.soon{border:2px solid #c8c1b4;box-shadow:none;opacity:.82}
@@ -1078,7 +1080,7 @@ function bHappyHours(){
   const strip=DOW_KEYS.map((d,i)=>`<button class="hh-dow${hhDay===d?' on':''}" data-a="hhd" data-d="${d}">${DOW_SHORT[i]}</button>`).join('');
   const addSlot=hhAddOpen?'':`<button class="hh-add-slot-hdr" data-a="hhop">+ Add</button>`;
   const TF_OPTS=[['After',''],['3pm','15:00'],['4pm','16:00'],['5pm','17:00'],['6pm','18:00'],['7pm','19:00'],['8pm','20:00']];
-  const timeFilterSel=`<select class="hh-tf-select${hhTimeFilter?' on':''}" data-a="hhtf-sel">${TF_OPTS.map(([lbl,val])=>`<option value="${val}"${hhTimeFilter===val?' selected':''}>${lbl}</option>`).join('')}</select>`;
+  const timeFilterSel=`<select id="hh-tf-sel" class="hh-tf-select${hhTimeFilter?' on':''}">${TF_OPTS.map(([lbl,val])=>`<option value="${val}"${hhTimeFilter===val?' selected':''}>${lbl}</option>`).join('')}</select>`;
   let formHtml='';
   if(hhAddOpen){
     const f=hhF;
@@ -1124,13 +1126,13 @@ function bHappyHours(){
       const timeStr=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
       const dayLbl=hhDayLabel(h);
       const metaStr=[timeStr,dayLbl].filter(Boolean).join(' · ');
-      const nbhdTag=h.neighborhood?`<div class="hh-nbhd">${esc(h.neighborhood)}</div>`:'';
-      return`<div class="${cardCls}" data-a="hhdv" data-id="${h.id}"><div class="hh-band" ${bandStyle}><div class="hh-band-left">${bandLeft}${bandUntil}</div><span class="hh-overflow">···</span></div><div class="hh-body"><div class="hh-body-main"><div class="hh-name">${esc(h.title)}</div>${nbhdTag}${metaStr?`<div class="hh-meta">${esc(metaStr)}</div>`:''}${hhChips(h,accent)}</div>${hhTimeBadge(h)}</div></div>`;
+      const bandNbhd=h.neighborhood?`<span class="hh-band-nbhd">${esc(h.neighborhood)}</span>`:`<span class="hh-overflow">···</span>`;
+      return`<div class="${cardCls}" data-a="hhdv" data-id="${h.id}"><div class="hh-band" ${bandStyle}><div class="hh-band-left">${bandLeft}${bandUntil}</div>${bandNbhd}</div><div class="hh-body"><div class="hh-body-main"><div class="hh-name">${esc(h.title)}</div>${metaStr?`<div class="hh-meta">${esc(metaStr)}</div>`:''}${hhChips(h,accent)}</div>${hhTimeBadge(h)}</div></div>`;
     }).join('');
   }else{
     cards=`<div class="hh-empty">No happy hours for ${DOW_ABB[DOW_KEYS.indexOf(hhDay)]} yet</div>`;
   }
-  return`<div class="hh-wrap"><div class="hh-hdr-row"><div class="hh-hdr-title">Happy Hours</div><div style="display:flex;align-items:center;gap:8px">${openLabel}${timeFilterSel}${addSlot}</div></div><div class="hh-dow-strip">${strip}</div>${formHtml}<div class="hh-list">${cards}</div></div>`;
+  return`<div class="hh-wrap"><div class="hh-hdr-row"><div class="hh-hdr-title">Happy Hours</div><div style="display:flex;align-items:center;gap:10px">${openLabel}${addSlot}</div></div><div class="hh-strip-row"><div class="hh-dow-strip">${strip}</div>${timeFilterSel}</div>${formHtml}<div class="hh-list">${cards}</div></div>`;
 }
 function bHHDetail(h){
   const time=[fmt12(h.timeStart),fmt12(h.timeEnd)].filter(Boolean).join(' – ');
@@ -1726,7 +1728,6 @@ const A={
   dcc:b=>{discCat=b.dataset.c;render();},
   dwk:b=>{const d=parseInt(b.dataset.dir,10);discWeekOff=Math.max(0,discWeekOff+d);render();},
   hhd:b=>{hhDay=b.dataset.d;render();},
-  'hhtf-sel':b=>{hhTimeFilter=b.value||'';render();},
   hhop:()=>{hhAddOpen=true;hhEditId=null;hhF={days:[hhDay||todayDow()],timeStart:'17:00',timeEnd:'19:00'};render();},
   hhcx:()=>{syncHHForm();hhAddOpen=false;hhEditId=null;hhF={};render();},
   hhtd:b=>{syncHHForm();const d=b.dataset.d,days=hhF.days||[];hhF={...hhF,days:days.includes(d)?days.filter(x=>x!==d):[...days,d]};render();},
@@ -1828,7 +1829,10 @@ document.addEventListener('click',ev=>{
   }catch(err){console.error('Click error:',err);}
 },true);
 document.addEventListener('change',ev=>{
-  try{const el=ev.target.closest('[data-a]');if(!el)return;const fn=A[el.dataset.a];if(fn)fn(el);}catch(err){console.error('Change error:',err);}
+  try{
+    if(ev.target.id==='hh-tf-sel'){hhTimeFilter=ev.target.value||'';render();return;}
+    const el=ev.target.closest('[data-a]');if(!el)return;const fn=A[el.dataset.a];if(fn)fn(el);
+  }catch(err){console.error('Change error:',err);}
 },true);
 
 // Search with debounce
