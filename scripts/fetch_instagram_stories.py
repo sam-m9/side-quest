@@ -51,7 +51,8 @@ GEMINI_URL = (
     "gemini-3.6-flash:generateContent"
 )
 
-REQUEST_TIMEOUT = 30
+REQUEST_TIMEOUT   = 30
+GEMINI_429_WAITS  = [30, 60, 120]  # backoff delays on rate-limit, per retry
 
 SOURCE_NAME = "Instagram Stories (Apify)"
 ID_PREFIX = "ig-story"
@@ -349,20 +350,34 @@ def call_gemini(bundles: list[dict]) -> list[dict]:
         },
     }
 
-    try:
-        resp = requests.post(
-            GEMINI_URL,
-            headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
-            json=payload,
-            timeout=60,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except requests.RequestException as exc:
-        log.error("Gemini API call failed: %s", exc)
-        return []
-    except json.JSONDecodeError as exc:
-        log.error("Gemini response not JSON: %s", exc)
+    data = None
+    for attempt, wait in enumerate([0] + GEMINI_429_WAITS):
+        if wait:
+            log.info("Gemini rate-limited — waiting %ds before retry %d/%d",
+                     wait, attempt, len(GEMINI_429_WAITS))
+            time.sleep(wait)
+        try:
+            resp = requests.post(
+                GEMINI_URL,
+                headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
+                json=payload,
+                timeout=60,
+            )
+            if resp.status_code == 429:
+                log.warning("Gemini 429 (attempt %d/%d)",
+                            attempt + 1, len(GEMINI_429_WAITS) + 1)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            break
+        except requests.RequestException as exc:
+            log.error("Gemini API call failed: %s", exc)
+            return []
+        except json.JSONDecodeError as exc:
+            log.error("Gemini response not JSON: %s", exc)
+            return []
+    if data is None:
+        log.error("Gemini gave up after %d retries", len(GEMINI_429_WAITS))
         return []
 
     # Extract text from the response

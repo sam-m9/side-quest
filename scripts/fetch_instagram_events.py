@@ -48,9 +48,10 @@ GEMINI_ENDPOINT = (
     "gemini-3.6-flash:generateContent"
 )
 
-LOOKBACK_HOURS  = 48   # include posts this many hours old
-MAX_POSTS       = 100  # cap before Gemini calls
-GEMINI_DELAY_S  = 6    # seconds between calls (free tier = 10 RPM)
+LOOKBACK_HOURS    = 48         # include posts this many hours old
+MAX_POSTS         = 100        # cap before Gemini calls
+GEMINI_DELAY_S    = 10         # seconds between calls (~6 RPM, well under free tier)
+GEMINI_429_WAITS  = [30, 60, 120]  # backoff delays on rate-limit, per retry
 
 VALID_CATEGORIES = frozenset({
     "music", "food", "art", "sports", "social",
@@ -317,20 +318,33 @@ def gemini_classify(post: dict) -> dict | None:
         },
     }
 
-    try:
-        resp = requests.post(
-            GEMINI_ENDPOINT,
-            headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
-            json=payload,
-            timeout=60,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        text = data["candidates"][0]["content"]["parts"][0]["text"]
-        return json.loads(text)
-    except (requests.RequestException, KeyError, json.JSONDecodeError, IndexError) as exc:
-        log.warning("Gemini call failed for post %s: %s", post.get("shortCode"), exc)
-        return None
+    for attempt, wait in enumerate([0] + GEMINI_429_WAITS):
+        if wait:
+            log.info("  rate-limited — waiting %ds before retry %d/%d",
+                     wait, attempt, len(GEMINI_429_WAITS))
+            time.sleep(wait)
+        try:
+            resp = requests.post(
+                GEMINI_ENDPOINT,
+                headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
+                json=payload,
+                timeout=60,
+            )
+            if resp.status_code == 429:
+                log.warning("  Gemini 429 for post %s (attempt %d/%d)",
+                            post.get("shortCode"), attempt + 1, len(GEMINI_429_WAITS) + 1)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            text = data["candidates"][0]["content"]["parts"][0]["text"]
+            return json.loads(text)
+        except (requests.RequestException, KeyError, json.JSONDecodeError, IndexError) as exc:
+            log.warning("Gemini call failed for post %s: %s", post.get("shortCode"), exc)
+            return None
+
+    log.warning("Gemini gave up on post %s after %d retries",
+                post.get("shortCode"), len(GEMINI_429_WAITS))
+    return None
 
 
 # --------------------------------------------------------------------------- #
