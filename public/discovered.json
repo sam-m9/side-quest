@@ -1,24 +1,5 @@
 [
   {
-    "id": "ig-3975353206432133516_64174236487",
-    "title": "Tiki Tatsu-Ya",
-    "date": "2026-09-07",
-    "time": "4:00 PM",
-    "endTime": "6:00 PM",
-    "location": "Tiki Tatsu-Ya",
-    "price": "$15 select tiki cocktails\n$10 Kirin pitchers\n$6 wings",
-    "description": "Enjoy daily happy hour specials at Tiki Tatsu-Ya from 4 to 6 PM.",
-    "category": "food",
-    "link": "https://www.instagram.com/p/3975353206432133516_64174236487/",
-    "notes": "Discovered via @instagram on Instagram",
-    "status": "want",
-    "isRecurring": true,
-    "recurringType": "sun,mon,tue,wed,thu,fri,sat",
-    "happyHour": true,
-    "thumbnail": "",
-    "addedAt": 1788784906670
-  },
-  {
     "id": "ig-3978131840524156293_2087967595",
     "title": "First Friday Art Trail",
     "date": "2026-09-11",
