@@ -1,13 +1,32 @@
 [
   {
+    "id": "ig-3982773559270080724_2087967595",
+    "title": "Champagne Cates Fundraiser at Green Light Social",
+    "date": "2026-09-10",
+    "time": "",
+    "endTime": "",
+    "location": "Green Light Social",
+    "price": "",
+    "description": "Party with WWW and Green Light Social this Thursday night in support of founder @champagnecates' battle with cancer. Features DJs, early freebies, and proceeds going directly to the cause.",
+    "category": "social",
+    "link": "https://www.instagram.com/p/3982773559270080724_2087967595/",
+    "notes": "Discovered via @instagram on Instagram",
+    "status": "want",
+    "isRecurring": false,
+    "recurringType": null,
+    "happyHour": false,
+    "thumbnail": "",
+    "addedAt": 1789039339670
+  },
+  {
     "id": "ig-3975353206432133516_64174236487",
     "title": "Tiki Tatsu-Ya",
-    "date": "2026-09-09",
+    "date": "2026-09-10",
     "time": "4:00 PM",
     "endTime": "6:00 PM",
     "location": "Tiki Tatsu-Ya",
     "price": "$15 select tiki cocktails\n$10 Kirin pitchers\n$6 wings",
-    "description": "Daily happy hour at Tiki Tatsu-Ya from 4 to 6 PM featuring $15 select tiki cocktails, $10 Kirin pitchers, and $6 wings.",
+    "description": "Daily happy hour at Tiki Tatsu-Ya featuring select tiki cocktails, Kirin pitchers, and wings from 4 to 6 PM.",
     "category": "food",
     "link": "https://www.instagram.com/p/3975353206432133516_64174236487/",
     "notes": "Discovered via @instagram on Instagram",
@@ -16,7 +35,7 @@
     "recurringType": "sun,mon,tue,wed,thu,fri,sat",
     "happyHour": true,
     "thumbnail": "",
-    "addedAt": 1788953548375
+    "addedAt": 1789039509346
   },
   {
     "id": "ig-3978131840524156293_2087967595",
@@ -131,6 +150,25 @@
     "happyHour": false,
     "thumbnail": "",
     "addedAt": 1788953330032
+  },
+  {
+    "id": "ig-3982890631446695066_2087967595",
+    "title": "Free Cheeseburgers at Hat Creek Burgers",
+    "date": "2026-09-12",
+    "time": "",
+    "endTime": "",
+    "location": "Hat Creek Burgers",
+    "price": "Free",
+    "description": "Wear Texas gear to get a free Little Hat cheeseburger at Hat Creek Burgers. No purchase necessary, valid all day for in-store/dine-in only.",
+    "category": "food",
+    "link": "https://www.instagram.com/p/3982890631446695066_2087967595/",
+    "notes": "Discovered via @instagram on Instagram",
+    "status": "want",
+    "isRecurring": false,
+    "recurringType": null,
+    "happyHour": false,
+    "thumbnail": "",
+    "addedAt": 1789039325550
   },
   {
     "id": "ig-3981862327717719688_6083906",
