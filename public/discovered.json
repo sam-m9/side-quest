@@ -1,24 +1,5 @@
 [
   {
-    "id": "ig-3991319120391201387_32054152028",
-    "title": "Refine Aesthetics Grand Opening Event",
-    "date": "2026-09-25",
-    "time": "4:00 PM",
-    "endTime": "7:00 PM",
-    "location": "Refine Aesthetics",
-    "price": "Free",
-    "description": "Refine Aesthetics ATX is celebrating the grand opening of their new West Austin location with an event featuring a skincare bundle giveaway.",
-    "category": "social",
-    "link": "https://www.instagram.com/p/3991319120391201387_32054152028/",
-    "notes": "Discovered via @instagram on Instagram",
-    "status": "want",
-    "isRecurring": false,
-    "recurringType": null,
-    "happyHour": false,
-    "thumbnail": "",
-    "addedAt": 1790077391774
-  },
-  {
     "id": "ig-3984071773935246288_6083906",
     "title": "Dear Media Studio Event",
     "date": "2026-09-26",
@@ -76,6 +57,25 @@
     "addedAt": 1790163549906
   },
   {
+    "id": "ig-3993545353018339740_64174236487",
+    "title": "Cosmic Saltillo",
+    "date": "2026-09-26",
+    "time": "10:00 PM",
+    "endTime": "12:00 AM",
+    "location": "Cosmic Saltillo",
+    "price": "$4.99 House Marg\n$4.99 Nitro Espresso Cocktail\n$4.99 Frozen Margarita\n$4.99 Chicken flautas\n$4.99 2 Mini tacos\n$4.99 Queso & fries\n$4.99 Chips & queso",
+    "description": "Late night happy hour at Cosmic Saltillo Thursday through Saturday featuring $4.99 drinks and food specials.",
+    "category": "food",
+    "link": "https://www.instagram.com/p/3993545353018339740_64174236487/",
+    "notes": "Discovered via @instagram on Instagram",
+    "status": "want",
+    "isRecurring": true,
+    "recurringType": "thu,fri,sat",
+    "happyHour": true,
+    "thumbnail": "",
+    "addedAt": 1790422368693
+  },
+  {
     "id": "ig-3990581534486370376_6083906",
     "title": "Chess Knights Club",
     "date": "2026-09-28",
@@ -93,6 +93,25 @@
     "happyHour": false,
     "thumbnail": "",
     "addedAt": 1790077291115
+  },
+  {
+    "id": "ig-3993509130593133662_6083906",
+    "title": "Dive-In Movies: Halloween Lineup",
+    "date": "2026-10-02",
+    "time": "6:30 PM",
+    "endTime": "",
+    "location": "Fairmont Austin Rooftop Pool",
+    "price": "Complimentary for hotel guests",
+    "description": "Fairmont Austin hosts Halloween Dive-In Movies poolside every Friday in October with skyline views and classic films. Popcorn, candy, and theater favorites available for purchase.",
+    "category": "film",
+    "link": "https://www.instagram.com/p/3993509130593133662_6083906/",
+    "notes": "Discovered via @instagram on Instagram",
+    "status": "want",
+    "isRecurring": true,
+    "recurringType": "fri",
+    "happyHour": false,
+    "thumbnail": "",
+    "addedAt": 1790422104608
   },
   {
     "id": "ig-3988465114983195641_2087967595",
