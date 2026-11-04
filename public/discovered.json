@@ -19,6 +19,25 @@
     "addedAt": 1793715741462
   },
   {
+    "id": "ig-4018210769358719520_52709155634",
+    "title": "The Cheesecake Factory",
+    "date": "2026-11-04",
+    "time": "4:00 PM",
+    "endTime": "6:00 PM",
+    "location": "The Cheesecake Factory at The Arboretum, 10000 Research Blvd.",
+    "price": "Cocktails starting at $6\n50+ appetizers, bites, flatbreads and cocktails under $10",
+    "description": "Enjoy happy hour at The Cheesecake Factory with 50+ menu items under $10 and cocktails starting at $6.",
+    "category": "food",
+    "link": "https://www.instagram.com/p/4018210769358719520_52709155634/",
+    "notes": "Discovered via @instagram on Instagram",
+    "status": "want",
+    "isRecurring": true,
+    "recurringType": "mon,tue,wed,thu,fri",
+    "happyHour": true,
+    "thumbnail": "",
+    "addedAt": 1793802939979
+  },
+  {
     "id": "ig-4018049570008985678_6083906",
     "title": "Emery Opening Day",
     "date": "2026-11-05",
@@ -93,6 +112,25 @@
     "happyHour": false,
     "thumbnail": "",
     "addedAt": 1793635159256
+  },
+  {
+    "id": "ig-4022574716728782097_33754741090",
+    "title": "Mini Cows & Pilates",
+    "date": "2026-11-08",
+    "time": "11:00 AM",
+    "endTime": "2:00 PM",
+    "location": "Legacy Padel & Pickleball",
+    "price": "",
+    "description": "Mini Cows & Pilates event featuring cold plunge, sauna, open-play padel, Hyrox fitness challenges, a live DJ, and photo ops.",
+    "category": "sports",
+    "link": "https://www.instagram.com/p/4022574716728782097_33754741090/",
+    "notes": "Discovered via @instagram on Instagram",
+    "status": "want",
+    "isRecurring": false,
+    "recurringType": null,
+    "happyHour": false,
+    "thumbnail": "",
+    "addedAt": 1793803106566
   },
   {
     "id": "ig-4019421697425042119_6083906",
